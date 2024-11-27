@@ -19,10 +19,9 @@ public class OptimodController {
 
         try {
             // Load the deliveries from the XML file
-            File fichierXML = new File("../ressources/" + XMLfilename);
-                                                    //src/main/resources/com/hexplosif/ressources/
+            File fichierXML = new File("src/main/java/com/hexplosif/ressources/" + XMLfilename);
 
-                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
             DocumentBuilder builder = factory.newDocumentBuilder();
 
