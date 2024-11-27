@@ -1,8 +1,8 @@
-package view;
+package com.hexplosif.view;
 
 import java.util.List;
-import model.DeliveryRequest;
-import model.Map;
+import com.hexplosif.model.DeliveryRequest;
+import com.hexplosif.model.Map;
 
 public class OptimodView {
     public void displayMap(Map map){

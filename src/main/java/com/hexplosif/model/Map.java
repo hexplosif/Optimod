@@ -1,4 +1,4 @@
-package model;
+package com.hexplosif.model;
 
 import java.util.List;
 
