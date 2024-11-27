@@ -19,9 +19,10 @@ public class OptimodController {
 
         try {
             // Load the deliveries from the XML file
-            File fichierXML = new File("/Users/aschlee/IdeaProjects/Optimod/src/main/java/com/hexplosif/ressources/" + XMLfilename);
+            File fichierXML = new File("../ressources/" + XMLfilename);
+                                                    //src/main/resources/com/hexplosif/ressources/
 
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
             DocumentBuilder builder = factory.newDocumentBuilder();
 
@@ -63,7 +64,7 @@ public class OptimodController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("Erreur spécifique");
+            throw new Exception("bbb");
         }
 
     }
