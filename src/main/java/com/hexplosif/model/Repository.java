@@ -3,15 +3,13 @@ package com.hexplosif.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class Repository {
-    private List<String[]> adresses = new ArrayList<>();
-    private List<String[]> informationNoeuds = new ArrayList<>();
-    private List<String[]> informationTroncons = new ArrayList<>();
-    private List<DeliveryRequest> deliveryRequests = new ArrayList<>();
-    private List<Segment> segments = new ArrayList<>();
+    private final List<String[]> adresses = new ArrayList<>();
+    private final List<String[]> informationNoeuds = new ArrayList<>();
+    private final List<String[]> informationTroncons = new ArrayList<>();
+    private final List<DeliveryRequest> deliveryRequests = new ArrayList<>();
+    private final List<Segment> segments = new ArrayList<>();
 
 
     public void addAdresses(String adresseEnlevement, String adresseLivraison) {

@@ -12,7 +12,8 @@ public class OptimodModelTest {
     @ParameterizedTest
     @ValueSource(strings = {"petitPlan.xml", "moyenPlan.xml", "grandPlan.xml"})
     public void loadMapTest(String mapFile) throws Exception {
-        Node warehouse = new Node(0,0,0);
+        Nodes warehouse = new Nodes();
+        warehouse.setNodesAttributes(0L,0,0);
         List<DeliveryRequest> deliveryRequestList = new ArrayList<>();
         OptimodModel optimodModel = new OptimodModel(warehouse, deliveryRequestList);
         optimodModel.loadMap(mapFile);
@@ -21,7 +22,8 @@ public class OptimodModelTest {
     @ParameterizedTest
     @ValueSource(strings = {"demandePetit11.xml", "demandeMoyen3.xml", "demandeGrand7.xml"})
     public void loadDeliveryRequest(String xmlFilename) throws Exception {
-        Node warehouse = new Node(0,0,0);
+        Nodes warehouse = new Nodes();
+        warehouse.setNodesAttributes(0L,0,0);
         List<DeliveryRequest> deliveryRequestList = new ArrayList<>();
         OptimodModel optimodModel = new OptimodModel(warehouse, deliveryRequestList);
         optimodModel.loadDeliveries(xmlFilename);

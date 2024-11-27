@@ -3,15 +3,15 @@ package com.hexplosif.model;
 import java.util.List;
 
 public class OptimodModel {
-    Node warehouse;
+    Nodes warehouse;
     List<DeliveryRequest> deliveryRequests;
 
-    public OptimodModel(Node warehouse, List<DeliveryRequest> deliveryRequests) {
+    public OptimodModel(Nodes warehouse, List<DeliveryRequest> deliveryRequests) {
         this.warehouse = warehouse;
         this.deliveryRequests = deliveryRequests;
     }
 
-    public Node getWarehouse() {
+    public Nodes getWarehouse() {
         return warehouse;
     }
 

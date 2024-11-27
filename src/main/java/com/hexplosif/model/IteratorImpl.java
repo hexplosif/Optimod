@@ -2,7 +2,7 @@ package com.hexplosif.model;
 import java.util.List;
 
 public class IteratorImpl<T> implements Iterator<T> {
-    private List<T> items;
+    private final List<T> items;
     private int position = 0;
 
     public IteratorImpl(List<T> items) {

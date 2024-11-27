@@ -3,10 +3,10 @@ package com.hexplosif.model;
 import java.util.List;
 
 public class Map {
-    List<Node> nodes;
+    List<Nodes> nodes;
     List<Segment> segments;
 
-    public Map(List<Node> nodes, List<Segment> segments) {
+    public Map(List<Nodes> nodes, List<Segment> segments) {
         this.nodes = nodes;
         this.segments = segments;
     }
@@ -15,7 +15,7 @@ public class Map {
         return segments;
     }
 
-    public List<Node> getNodes() {
+    public List<Nodes> getNodes() {
         return nodes;
     }
 
