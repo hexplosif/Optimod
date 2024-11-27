@@ -17,11 +17,5 @@ public class OptimodApplication {
 		// Call the function
 		controller.loadDeliveryRequest("demandeGrand9.xml");
 
-
-
-
 	}
-
-
-
 }
