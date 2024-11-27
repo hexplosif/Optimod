@@ -118,26 +118,38 @@ public class OptimodController {
                 }
                 repository.addDeliveryRequests(new DeliveryRequest(pickupLocation, deliveryLocation));
 
-                Iterator<String[]> tronconIterator = repository.getIteratorInformationTroncons();
-                while (tronconIterator.hasNext()) {
-                    String[] troncon = tronconIterator.next();
-                    if (pickupLocation.getID() == Long.parseLong(troncon[0].trim()) &&
-                            deliveryLocation.getID() == Long.parseLong(troncon[1].trim())) {
-                        repository.addSegments(new Segment(Double.parseDouble(troncon[2]), troncon[3], pickupLocation, deliveryLocation));
-                    }
-                }
-
-
             }
 
 
-/*
+            Nodes start = new Nodes();
+            Nodes end = new Nodes();
+
+            Iterator<String[]> tronconIterator = repository.getIteratorInformationTroncons();
+            while (tronconIterator.hasNext()) {
+                String[] troncon = tronconIterator.next();
+
+                Iterator<String[]> nodeIterator2 = repository.getIteratorInformationNoeuds();
+                while (nodeIterator2.hasNext()) {
+                    String[] node = nodeIterator2.next();
+                    if(troncon[0].equals(node[0])) {
+                        start.setNodesAttributes(Long.parseLong(node[0]), Double.parseDouble(node[1]), Double.parseDouble(node[2]));
+                    }
+                    if(troncon[1].equals(node[0])) {
+                        end.setNodesAttributes(Long.parseLong(node[0]), Double.parseDouble(node[1]), Double.parseDouble(node[2]));
+                    }
+
+                }
+                repository.addSegments(new Segment(Double.parseDouble(troncon[2]), troncon[3], start, end));
+            }
+
+
+
             Iterator<Segment> segmentIterator = repository.getIteratorSegments();
             while (segmentIterator.hasNext()) {
                 Segment segment = segmentIterator.next();
                 System.out.println("Name: " + segment.getName() + ", Longueur: " + segment.getLength());
             }
-
+/*
             Iterator<String[]> nodeIterator = repository.getIteratorInformationNoeuds();
             System.out.println("\nNoeuds:");
             while (nodeIterator.hasNext()) {
