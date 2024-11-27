@@ -15,13 +15,14 @@ public class OptimodController {
     public void loadMap(String XMLfilename) {
         // Load the map from the XML file
     }
-    public void loadDeliveryRequest(String XMLfilename) {
+    public void loadDeliveryRequest(String XMLfilename) throws Exception {
 
         try {
             // Load the deliveries from the XML file
-            File fichierXML = new File("/Users/mathisbonkoungou/IdeaProjects/Optimod/src/main/java/com/hexplosif/ressources/" + XMLfilename);
+            File fichierXML = new File("../ressources/" + XMLfilename);
+                                                    //src/main/resources/com/hexplosif/ressources/
 
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
             DocumentBuilder builder = factory.newDocumentBuilder();
 
@@ -63,6 +64,7 @@ public class OptimodController {
 
         } catch (Exception e) {
             e.printStackTrace();
+            throw new Exception("bbb");
         }
 
     }
