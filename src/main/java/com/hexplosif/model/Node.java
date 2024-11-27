@@ -1,4 +1,4 @@
-package model;
+package com.hexplosif.model;
 
 public class Node {
     private int id;
