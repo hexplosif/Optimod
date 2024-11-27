@@ -14,6 +14,7 @@ public class OptimodControllerTest {
         optimodController.loadMap(mapFile);
     }
 
+
     @ParameterizedTest
     @ValueSource(strings = {"demandePetit11.xml", "demandeMoyen3.xml", "demandeGrand7.xml"})
     public void loadDeliveryRequest(String xmlFilename) throws Exception {
