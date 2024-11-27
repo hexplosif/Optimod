@@ -15,11 +15,11 @@ public class Node {
         return id;
     }
 
-    public int getLatitude() {
+    public double getLatitude() {
         return latitude;
     }
 
-    public int getLongitude() {
+    public double getLongitude() {
         return longitude;
     }
 }
