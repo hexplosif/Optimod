@@ -12,7 +12,7 @@ public class MapTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"petitPlan.xml", "moyenPlan.xml", "grandPlan.xml"})
-    public void loadMapTest(String mapFile) {
+    public void loadMapTest(String mapFile) throws Exception {
         List< Node > nodes = new ArrayList<>();
         List< Segment > segments = new ArrayList<>();
         Map map = new Map(nodes, segments);
