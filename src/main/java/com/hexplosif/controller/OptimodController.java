@@ -19,7 +19,7 @@ public class OptimodController {
 
         try {
             // Load the deliveries from the XML file
-            File fichierXML = new File("../ressources/" + XMLfilename);
+            File fichierXML = new File("/Users/mathisbonkoungou/IdeaProjects/Optimod/src/main/java/com/hexplosif/ressources/" + XMLfilename);
                                                     //src/main/resources/com/hexplosif/ressources/
 
                     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
