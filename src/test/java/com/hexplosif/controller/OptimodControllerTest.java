@@ -2,6 +2,7 @@ package com.hexplosif.controller;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class OptimodControllerTest {
@@ -16,10 +17,15 @@ public class OptimodControllerTest {
 
 
     @ParameterizedTest
-    @ValueSource(strings = {"demandePetit11.xml", "demandeMoyen3.xml", "demandeGrand7.xml"})
-    public void loadDeliveryRequest(String xmlFilename) throws Exception {
+//    @ValueSource(strings = {"demandePetit11.xml", "demandeMoyen3.xml", "demandeGrand7.xml"})
+    @CsvSource({
+            "petitPlan.xml, demandePetit1.xml",
+            "moyenPlan.xml, demandeMoyen3.xml",
+            "grandPlan.xml, demandeGrand7.xml"
+    })
+    public void loadDeliveryRequest(String xmlMap, String xmlFilename) throws Exception {
 
         OptimodController optimodController = new OptimodController();
-        optimodController.loadDeliveryRequest(xmlFilename);
+        optimodController.loadDeliveryRequest(xmlMap, xmlFilename);
     }
 }
