@@ -15,7 +15,7 @@ public class OptimodApplication {
 		OptimodController controller = new OptimodController();
 
 		// Call the function
-		controller.loadDeliveryRequest("petitPlan.xml", "demandeGrand9.xml");
+		controller.loadDeliveryRequest("grandPlan.xml", "demandeGrand9.xml");
 
 	}
 }

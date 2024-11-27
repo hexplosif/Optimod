@@ -10,6 +10,8 @@ public class Repository {
     private List<String[]> adresses = new ArrayList<>();
     private List<String[]> informationNoeuds = new ArrayList<>();
     private List<String[]> informationTroncons = new ArrayList<>();
+    private List<DeliveryRequest> deliveryRequests = new ArrayList<>();
+    private List<Segment> segments = new ArrayList<>();
 
 
     public void addAdresses(String adresseEnlevement, String adresseLivraison) {
@@ -24,6 +26,14 @@ public class Repository {
         informationTroncons.add(new String[]{origine, destination, longueur, nomRue});
     }
 
+    public void addDeliveryRequests(DeliveryRequest deliveryRequest) {
+        deliveryRequests.add(deliveryRequest);
+    }
+
+    public void addSegments(Segment segment) {
+        segments.add(segment);
+    }
+
 
     public Iterator<String[]> getIteratorAdresses() {
         return new IteratorImpl<>(adresses);
@@ -35,6 +45,14 @@ public class Repository {
 
     public Iterator<String[]> getIteratorInformationTroncons() {
         return new IteratorImpl<>(informationTroncons);
+    }
+
+    public IteratorImpl<DeliveryRequest> getIteratorDeliveryRequests() {
+        return new IteratorImpl<>(deliveryRequests);
+    }
+
+    public IteratorImpl<Segment> getIteratorSegments() {
+        return new IteratorImpl<>(segments);
     }
 }
 

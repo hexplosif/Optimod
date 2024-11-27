@@ -1,19 +1,19 @@
 package com.hexplosif.model;
 
 public class Segment {
-    int length;
+    double length;
     String name;
-    Node start;
-    Node end;
+    Nodes start;
+    Nodes end;
 
-    public Segment(int length, String name, Node start, Node end) {
+    public Segment(double length, String name, Nodes start, Nodes end) {
         this.length = length;
         this.name = name;
         this.start = start;
         this.end = end;
     }
 
-    public int getLength() {
+    public double getLength() {
         return length;
     }
 
@@ -21,7 +21,11 @@ public class Segment {
         return name;
     }
 
-    public Node getStart() {
+    public Nodes getStart() {
         return start;
+    }
+
+    public Nodes getEnd() {
+        return end;
     }
 }

@@ -1,19 +1,19 @@
 package com.hexplosif.model;
 
 public class DeliveryRequest {
-    Node pickupLocation;
-    Node deliveryLocation;
+    Nodes pickupLocation;
+    Nodes deliveryLocation;
 
-    public DeliveryRequest(Node pickupLocation, Node deliveryLocation) {
+    public DeliveryRequest(Nodes pickupLocation, Nodes deliveryLocation) {
         this.pickupLocation = pickupLocation;
         this.deliveryLocation = deliveryLocation;
     }
 
-    public Node getPickupLocation() {
+    public Nodes getPickupLocation() {
         return pickupLocation;
     }
 
-    public Node getDeliveryLocation() {
+    public Nodes getDeliveryLocation() {
         return deliveryLocation;
     }
 }

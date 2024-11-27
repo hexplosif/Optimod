@@ -6,8 +6,7 @@ import java.io.File;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import com.hexplosif.model.Iterator;
-import com.hexplosif.model.Repository;
+import com.hexplosif.model.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
@@ -48,8 +47,6 @@ public class OptimodController {
                 System.err.println("Erreur : le nom de l'élément racine n'est pas 'reseau'.");
                 System.exit(1);
             }
-
-
 
             NodeList listeLivraisons = documentDeliveryRequests.getElementsByTagName("livraison");
             NodeList listeNoeuds = documentMap.getElementsByTagName("noeud");
@@ -102,13 +99,43 @@ public class OptimodController {
                 }
             }
 
+            Iterator<String[]> addressIterator = repository.getIteratorAdresses();
+            while (addressIterator.hasNext()) {
+                String[] address = addressIterator.next();
 
-            Iterator<String[]> tronconIterator = repository.getIteratorInformationTroncons();
-            System.out.println("\nTronçons:");
-            while (tronconIterator.hasNext()) {
-                String[] troncon = tronconIterator.next();
-                System.out.println("Origine: " + troncon[0] + ", Destination: " + troncon[1] +
-                        ", Longueur: " + troncon[2] + ", Rue: " + troncon[3]);
+                Nodes pickupLocation = new Nodes();
+                Nodes deliveryLocation = new Nodes();
+
+                Iterator<String[]> nodeIterator = repository.getIteratorInformationNoeuds();
+                while (nodeIterator.hasNext()) {
+                    String[] node = nodeIterator.next();
+                    if(address[0].equals(node[0])) {
+                        pickupLocation.setNodesAttributes(Long.parseLong(node[0]), Double.parseDouble(node[1]), Double.parseDouble(node[2]));
+                    }
+                    if(address[1].equals(node[0])) {
+                        deliveryLocation.setNodesAttributes(Long.parseLong(node[0]), Double.parseDouble(node[1]), Double.parseDouble(node[2]));
+                    }
+                }
+                repository.addDeliveryRequests(new DeliveryRequest(pickupLocation, deliveryLocation));
+
+                Iterator<String[]> tronconIterator = repository.getIteratorInformationTroncons();
+                while (tronconIterator.hasNext()) {
+                    String[] troncon = tronconIterator.next();
+                    if (pickupLocation.getID() == Long.parseLong(troncon[0].trim()) &&
+                            deliveryLocation.getID() == Long.parseLong(troncon[1].trim())) {
+                        repository.addSegments(new Segment(Double.parseDouble(troncon[2]), troncon[3], pickupLocation, deliveryLocation));
+                    }
+                }
+
+
+            }
+
+
+/*
+            Iterator<Segment> segmentIterator = repository.getIteratorSegments();
+            while (segmentIterator.hasNext()) {
+                Segment segment = segmentIterator.next();
+                System.out.println("Name: " + segment.getName() + ", Longueur: " + segment.getLength());
             }
 
             Iterator<String[]> nodeIterator = repository.getIteratorInformationNoeuds();
@@ -118,12 +145,22 @@ public class OptimodController {
                 System.out.println("ID: " + node[0] + ", Latitude: " + node[1] + ", Longitude: " + node[2]);
             }
 
-            Iterator<String[]> addressIterator = repository.getIteratorAdresses();
+            Iterator<String[]> addressIterator1 = repository.getIteratorAdresses();
             System.out.println("\nAdresses:");
-            while (addressIterator.hasNext()) {
-                String[] address = addressIterator.next();
+            while (addressIterator1.hasNext()) {
+                String[] address = addressIterator1.next();
                 System.out.println("Enlèvement: " + address[0] + ", Livraison: " + address[1]);
             }
+
+            Iterator<DeliveryRequest> addressIterator1 = repository.getIteratorDeliveryRequests();
+            System.out.println("\nDeliveryRequest:");
+            while (addressIterator1.hasNext()) {
+                DeliveryRequest deliveryRequest = addressIterator1.next();
+                System.out.println("ID : " + deliveryRequest.getPickupLocation().getID()+ " Latitude : " + deliveryRequest.getPickupLocation().getLatitude() + " Longitude : " + deliveryRequest.getPickupLocation().getLongitude() + " ID : " + deliveryRequest.getDeliveryLocation().getID()+ " Latitude : " + deliveryRequest.getDeliveryLocation().getLatitude() + " Longitude : " + deliveryRequest.getDeliveryLocation().getLongitude() );
+            }
+
+
+*/
 
         } catch (Exception e) {
             e.printStackTrace();
