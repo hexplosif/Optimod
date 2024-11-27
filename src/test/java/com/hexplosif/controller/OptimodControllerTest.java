@@ -1,13 +1,7 @@
 package com.hexplosif.controller;
 
-import com.hexplosif.model.Map;
-import com.hexplosif.model.Node;
-import com.hexplosif.model.Segment;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class OptimodControllerTest {
 
