@@ -5,6 +5,9 @@ import java.util.List;
 import java.io.File;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import com.hexplosif.model.Iterator;
+import com.hexplosif.model.Repository;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
@@ -52,15 +55,7 @@ public class OptimodController {
             NodeList listeNoeuds = documentMap.getElementsByTagName("noeud");
             NodeList listeTroncons = documentMap.getElementsByTagName("troncon");
 
-            // Liste pour stocker les tuples (enlèvement, livraison)
-            List<String[]> adresses = new ArrayList<>();
-
-            // Liste pour stocker les tuples (id, latitude, longitude)
-            List<String[]> informationNoeuds = new ArrayList<>();
-
-            // Liste pour stocker les tuples (origine, destination, longueur, nomRue)
-            List<String[]> informationTroncons = new ArrayList<>();
-
+            Repository repository = new Repository();
 
             for (int i = 0; i < listeLivraisons.getLength(); i++) {
                 Node livraison = listeLivraisons.item(i);
@@ -72,8 +67,7 @@ public class OptimodController {
                     String adresseEnlevement = elementLivraison.getAttribute("adresseEnlevement");
                     String adresseLivraison = elementLivraison.getAttribute("adresseLivraison");
 
-                    // Ajouter dans la liste sous forme de tableau
-                    adresses.add(new String[]{adresseEnlevement, adresseLivraison});
+                    repository.addAdresses(adresseEnlevement, adresseLivraison);
                 }
             }
 
@@ -88,8 +82,7 @@ public class OptimodController {
                     String latitudeNoeud = elementNoeud.getAttribute("latitude");
                     String longitudeNoeud = elementNoeud.getAttribute("longitude");
 
-                    // Ajouter dans la liste sous forme de tableau
-                    informationNoeuds.add(new String[]{idNoeud, latitudeNoeud, longitudeNoeud});
+                    repository.addInformationNoeuds(idNoeud, latitudeNoeud, longitudeNoeud);
                 }
             }
 
@@ -105,28 +98,32 @@ public class OptimodController {
                     String longueurTroncon = elementTroncon.getAttribute("longueur");
                     String nomRueTroncon = elementTroncon.getAttribute("nomRue");
 
-                    // Ajouter dans la liste sous forme de tableau
-                    informationTroncons.add(new String[]{origineTroncon, destinationTroncon, longueurTroncon, nomRueTroncon});
+                    repository.addInformationTroncons(origineTroncon, destinationTroncon, longueurTroncon, nomRueTroncon);
                 }
             }
 
 
-            System.out.println("Tuples (origine, destination, longueur, nomRue) :");
-            for (String[] tuple : informationTroncons) {
-                System.out.println("origine : " + tuple[0] + ", destination : " + tuple[1] + ", longueur : " + tuple[2] + ", nomRue : " + tuple[3]);
+            Iterator<String[]> tronconIterator = repository.getIteratorInformationTroncons();
+            System.out.println("\nTronçons:");
+            while (tronconIterator.hasNext()) {
+                String[] troncon = tronconIterator.next();
+                System.out.println("Origine: " + troncon[0] + ", Destination: " + troncon[1] +
+                        ", Longueur: " + troncon[2] + ", Rue: " + troncon[3]);
             }
 
-            System.out.println("Tuples (id, latitude, longitude) :");
-            for (String[] tuple : informationNoeuds) {
-                System.out.println("id : " + tuple[0] + ", latitude : " + tuple[1] + ", longitude : " + tuple[2]);
+            Iterator<String[]> nodeIterator = repository.getIteratorInformationNoeuds();
+            System.out.println("\nNoeuds:");
+            while (nodeIterator.hasNext()) {
+                String[] node = nodeIterator.next();
+                System.out.println("ID: " + node[0] + ", Latitude: " + node[1] + ", Longitude: " + node[2]);
             }
 
-            System.out.println("Tuples (enlèvement, livraison) :");
-            for (String[] tuple : adresses) {
-                System.out.println("Enlèvement : " + tuple[0] + ", Livraison : " + tuple[1]);
+            Iterator<String[]> addressIterator = repository.getIteratorAdresses();
+            System.out.println("\nAdresses:");
+            while (addressIterator.hasNext()) {
+                String[] address = addressIterator.next();
+                System.out.println("Enlèvement: " + address[0] + ", Livraison: " + address[1]);
             }
-
-
 
         } catch (Exception e) {
             e.printStackTrace();
