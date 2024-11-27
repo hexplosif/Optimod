@@ -11,6 +11,11 @@ public class OptimodApplication {
 
 		SpringApplication.run(OptimodApplication.class, args);
 
+		OptimodController controller = new OptimodController();
+
+		// Call the function
+		controller.loadDeliveryRequest("demandePetit2.xml");
+
 
 
 
