@@ -1,4 +1,4 @@
-package com.hexplosif.model;
+package com.hexplosif.optimod.model;
 
 import java.util.ArrayList;
 import java.util.List;

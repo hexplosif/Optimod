@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Node</title>
+</head>
+<body>
+    <form th:action="@{'/editNode/' + ${node.id}}" th:object="${node}" method="post">
+        <input type="hidden" th:field="*{id}"/>
+        <label for="latitude">Latitude:</label>
+        <input type="text" th:field="*{latitude}" id="latitude"/>
+        <label for="longitude">Longitude:</label>
+        <input type="text" th:field="*{longitude}" id="longitude"/>
+        <button type="submit">Edit</button>
+    </form>
+    <a href="/nodes">Back to Nodes</a>
+</body>
+</html>

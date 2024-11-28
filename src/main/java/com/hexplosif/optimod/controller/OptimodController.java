@@ -1,15 +1,12 @@
-package com.hexplosif.controller;
+package com.hexplosif.optimod.controller;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.io.File;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import com.hexplosif.model.*;
+import com.hexplosif.optimod.model.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
 public class OptimodController {
@@ -30,8 +27,8 @@ public class OptimodController {
 
         try {
             // Load the deliveries from the XML file
-            File fichierXML = new File("src/main/java/com/hexplosif/ressources/" + XMLfilename);
-            File mapXML = new File("src/main/java/com/hexplosif/ressources/" + XMLmap);
+            File fichierXML = new File("src/main/java/com/hexplosif/optimod/ressources/" + XMLfilename);
+            File mapXML = new File("src/main/java/com/hexplosif/optimod/ressources/" + XMLmap);
 
             Document documentDeliveryRequests = parseXMLFile(fichierXML);
             Document documentMap = parseXMLFile(mapXML);
@@ -55,9 +52,9 @@ public class OptimodController {
             Repository repository = new Repository();
 
             for (int i = 0; i < listeLivraisons.getLength(); i++) {
-                Node livraison = listeLivraisons.item(i);
+                org.w3c.dom.Node livraison = listeLivraisons.item(i);
 
-                if (livraison.getNodeType() == Node.ELEMENT_NODE) {
+                if (livraison.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
                     Element elementLivraison = (Element) livraison;
 
                     // Extraire les attributs adresseEnlevement et adresseLivraison
@@ -69,9 +66,9 @@ public class OptimodController {
             }
 
             for (int i = 0; i < listeNoeuds.getLength(); i++) {
-                Node noeud = listeNoeuds.item(i);
+                org.w3c.dom.Node noeud = listeNoeuds.item(i);
 
-                if (noeud.getNodeType() == Node.ELEMENT_NODE) {
+                if (noeud.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
                     Element elementNoeud = (Element) noeud;
 
                     // Extraire les attributs id, latitude et longitude
@@ -84,9 +81,9 @@ public class OptimodController {
             }
 
             for (int i = 0; i < listeTroncons.getLength(); i++) {
-                Node troncon = listeTroncons.item(i);
+                org.w3c.dom.Node troncon = listeTroncons.item(i);
 
-                if (troncon.getNodeType() == Node.ELEMENT_NODE) {
+                if (troncon.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
                     Element elementTroncon = (Element) troncon;
 
                     // Extraire les attributs origine, destination, longueur et nomRue
@@ -103,17 +100,21 @@ public class OptimodController {
             while (addressIterator.hasNext()) {
                 String[] address = addressIterator.next();
 
-                Nodes pickupLocation = new Nodes();
-                Nodes deliveryLocation = new Nodes();
+                Node pickupLocation = new Node();
+                Node deliveryLocation = new Node();
 
                 Iterator<String[]> nodeIterator = repository.getIteratorInformationNoeuds();
                 while (nodeIterator.hasNext()) {
                     String[] node = nodeIterator.next();
                     if(address[0].equals(node[0])) {
-                        pickupLocation.setNodesAttributes(Long.parseLong(node[0]), Double.parseDouble(node[1]), Double.parseDouble(node[2]));
+                        pickupLocation.setId(Long.parseLong(node[0]));
+                        pickupLocation.setLatitude(Double.parseDouble(node[1]));
+                        pickupLocation.setLongitude(Double.parseDouble(node[2]));
                     }
                     if(address[1].equals(node[0])) {
-                        deliveryLocation.setNodesAttributes(Long.parseLong(node[0]), Double.parseDouble(node[1]), Double.parseDouble(node[2]));
+                        deliveryLocation.setId(Long.parseLong(node[0]));
+                        deliveryLocation.setLatitude(Double.parseDouble(node[1]));
+                        deliveryLocation.setLongitude(Double.parseDouble(node[2]));
                     }
                 }
                 repository.addDeliveryRequests(new DeliveryRequest(pickupLocation, deliveryLocation));
@@ -121,8 +122,8 @@ public class OptimodController {
             }
 
 
-            Nodes start = new Nodes();
-            Nodes end = new Nodes();
+            Node start = new Node();
+            Node end = new Node();
 
             Iterator<String[]> tronconIterator = repository.getIteratorInformationTroncons();
             while (tronconIterator.hasNext()) {
@@ -132,10 +133,14 @@ public class OptimodController {
                 while (nodeIterator2.hasNext()) {
                     String[] node = nodeIterator2.next();
                     if(troncon[0].equals(node[0])) {
-                        start.setNodesAttributes(Long.parseLong(node[0]), Double.parseDouble(node[1]), Double.parseDouble(node[2]));
+                        start.setId(Long.parseLong(node[0]));
+                        start.setLatitude(Double.parseDouble(node[1]));
+                        start.setLongitude(Double.parseDouble(node[2]));
                     }
                     if(troncon[1].equals(node[0])) {
-                        end.setNodesAttributes(Long.parseLong(node[0]), Double.parseDouble(node[1]), Double.parseDouble(node[2]));
+                        end.setId(Long.parseLong(node[0]));
+                        end.setLatitude(Double.parseDouble(node[1]));
+                        end.setLongitude(Double.parseDouble(node[2]));
                     }
 
                 }

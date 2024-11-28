@@ -1,4 +1,4 @@
-package com.hexplosif.model;
+package com.hexplosif.optimod.model;
 
 
 public interface Iterator<T> {

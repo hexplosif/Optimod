@@ -1,4 +1,4 @@
-package com.hexplosif.model;
+package com.hexplosif.optimod.model;
 import java.util.List;
 
 public class IteratorImpl<T> implements Iterator<T> {

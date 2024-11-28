@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nodes</title>
+</head>
+<body>
+    <h2 class="h2">List of Nodes</h2>
+
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+        </tr>
+        <tr th:each="node : ${nodes}">
+            <td th:text="${node.id}">1</td>
+            <td th:text="${node.latitude}">1</td>
+            <td th:text="${node.longitude}">1</td>
+            <td><a th:href="@{'/deleteNode/{id}'(id=${node.id})}">Delete</a></td>
+            <td><a th:href="@{'/editNode/{id}'(id=${node.id})}">Edit</a></td>
+            <td><a th:href="@{'/node/{id}'(id=${node.id})}">View</a></td>
+        </tr>
+    </table>
+
+</body>
+</html>

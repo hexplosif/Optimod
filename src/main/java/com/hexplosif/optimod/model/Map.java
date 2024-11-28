@@ -1,12 +1,12 @@
-package com.hexplosif.model;
+package com.hexplosif.optimod.model;
 
 import java.util.List;
 
 public class Map {
-    List<Nodes> nodes;
+    List<Node> nodes;
     List<Segment> segments;
 
-    public Map(List<Nodes> nodes, List<Segment> segments) {
+    public Map(List<Node> nodes, List<Segment> segments) {
         this.nodes = nodes;
         this.segments = segments;
     }
@@ -15,7 +15,7 @@ public class Map {
         return segments;
     }
 
-    public List<Nodes> getNodes() {
+    public List<Node> getNodes() {
         return nodes;
     }
 

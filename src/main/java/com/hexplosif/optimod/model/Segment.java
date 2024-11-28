@@ -1,12 +1,12 @@
-package com.hexplosif.model;
+package com.hexplosif.optimod.model;
 
 public class Segment {
     double length;
     String name;
-    Nodes start;
-    Nodes end;
+    Node start;
+    Node end;
 
-    public Segment(double length, String name, Nodes start, Nodes end) {
+    public Segment(double length, String name, Node start, Node end) {
         this.length = length;
         this.name = name;
         this.start = start;
@@ -21,11 +21,11 @@ public class Segment {
         return name;
     }
 
-    public Nodes getStart() {
+    public Node getStart() {
         return start;
     }
 
-    public Nodes getEnd() {
+    public Node getEnd() {
         return end;
     }
 }

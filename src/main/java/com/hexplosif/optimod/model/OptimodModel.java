@@ -1,17 +1,17 @@
-package com.hexplosif.model;
+package com.hexplosif.optimod.model;
 
 import java.util.List;
 
 public class OptimodModel {
-    Nodes warehouse;
+    Node warehouse;
     List<DeliveryRequest> deliveryRequests;
 
-    public OptimodModel(Nodes warehouse, List<DeliveryRequest> deliveryRequests) {
+    public OptimodModel(Node warehouse, List<DeliveryRequest> deliveryRequests) {
         this.warehouse = warehouse;
         this.deliveryRequests = deliveryRequests;
     }
 
-    public Nodes getWarehouse() {
+    public Node getWarehouse() {
         return warehouse;
     }
 
