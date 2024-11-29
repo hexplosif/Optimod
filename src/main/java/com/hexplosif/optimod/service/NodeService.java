@@ -26,6 +26,16 @@ public class NodeService {
     }
 
     public Node saveNode(Node node) {
-        return nodeProxy.saveNode(node);
+        Node savedNode;
+        if (node.getId() == null) {
+            savedNode = nodeProxy.createNode(node);
+        } else {
+            savedNode = nodeProxy.saveNode(node);
+        }
+        return savedNode;
+    }
+
+    public void createNode(Node node) {
+        nodeProxy.createNode(node);
     }
 }

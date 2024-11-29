@@ -4,14 +4,27 @@ import java.io.File;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import com.hexplosif.optimod.model.*;
+import com.hexplosif.optimod.model.Node;
+import com.hexplosif.optimod.service.NodeService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Element;
 
+/*
+    * Ptn mais c'est quoi ce code
+    * Non vraiment la faut tout refaire, c'est aberrant je pleure mais cest quoi ça meme copilot il sait plus quoi dire
+    * Bon je refait tout mais je laisse le code d'origine en commentaire
+ */
+
+/*
 public class OptimodController {
 
-    public void loadMap(String XMLfilename) {
+    @Autowired
+    private NodeService nodeService;
+
+    public void loadMap(String XMLFileName) {
         // Load the map from the XML file
     }
 
@@ -23,14 +36,14 @@ public class OptimodController {
         return document;
     }
 
-    public void loadDeliveryRequest(String XMLmap, String XMLfilename) throws Exception {
+    public void loadDeliveryRequest(String XMLmap, String XMLFileName) throws Exception {
 
         try {
             // Load the deliveries from the XML file
-            File fichierXML = new File("src/main/java/com/hexplosif/optimod/ressources/" + XMLfilename);
+            File XMLFile = new File("src/main/java/com/hexplosif/optimod/ressources/" + XMLFileName);
             File mapXML = new File("src/main/java/com/hexplosif/optimod/ressources/" + XMLmap);
 
-            Document documentDeliveryRequests = parseXMLFile(fichierXML);
+            Document documentDeliveryRequests = parseXMLFile(XMLFile);
             Document documentMap = parseXMLFile(mapXML);
 
             String nomRacineDeliveryRequests = documentDeliveryRequests.getDocumentElement().getNodeName();
@@ -46,7 +59,7 @@ public class OptimodController {
             }
 
             NodeList listeLivraisons = documentDeliveryRequests.getElementsByTagName("livraison");
-            NodeList listeNoeuds = documentMap.getElementsByTagName("noeud");
+            NodeList nodeList = documentMap.getElementsByTagName("noeud");
             NodeList listeTroncons = documentMap.getElementsByTagName("troncon");
 
             Repository repository = new Repository();
@@ -65,8 +78,8 @@ public class OptimodController {
                 }
             }
 
-            for (int i = 0; i < listeNoeuds.getLength(); i++) {
-                org.w3c.dom.Node noeud = listeNoeuds.item(i);
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                org.w3c.dom.Node noeud = nodeList.item(i);
 
                 if (noeud.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
                     Element elementNoeud = (Element) noeud;
@@ -77,6 +90,7 @@ public class OptimodController {
                     String longitudeNoeud = elementNoeud.getAttribute("longitude");
 
                     repository.addInformationNoeuds(idNoeud, latitudeNoeud, longitudeNoeud);
+
                 }
             }
 
@@ -154,7 +168,7 @@ public class OptimodController {
                 Segment segment = segmentIterator.next();
                 System.out.println("Name: " + segment.getName() + ", Longueur: " + segment.getLength());
             }
-/*
+
             Iterator<String[]> nodeIterator = repository.getIteratorInformationNoeuds();
             System.out.println("\nNoeuds:");
             while (nodeIterator.hasNext()) {
@@ -177,7 +191,6 @@ public class OptimodController {
             }
 
 
-*/
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -186,4 +199,61 @@ public class OptimodController {
 
     }
 }
+*/
 
+@Controller
+public class OptimodController {
+
+    @Autowired
+    private NodeService nodeService;
+
+    /**
+     * Parse the XML file
+     * @param file The XML file
+     * @return The document
+     */
+    private Document parseXMLFile(File file) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document document = builder.parse(file);
+        document.getDocumentElement().normalize();
+        return document;
+    }
+
+    /**
+     * Load the nodes from the XML file
+     * @param XMLFileName The XML file
+     */
+    public void loadNode(String XMLFileName) {
+
+        try {
+            File XMLFile = new File("src/main/java/com/hexplosif/optimod/ressources/" + XMLFileName);
+            Document document = parseXMLFile(XMLFile);
+            NodeList nodeList = document.getElementsByTagName("noeud");
+
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                org.w3c.dom.Node noeud = nodeList.item(i);
+
+                if (noeud.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                    Element elementNoeud = (Element) noeud;
+
+                    String idNoeud = elementNoeud.getAttribute("id");
+                    String latitudeNoeud = elementNoeud.getAttribute("latitude");
+                    String longitudeNoeud = elementNoeud.getAttribute("longitude");
+
+                    Node node = new Node();
+                    node.setId(Long.parseLong(idNoeud));
+                    node.setLatitude(Double.parseDouble(latitudeNoeud));
+                    node.setLongitude(Double.parseDouble(longitudeNoeud));
+
+                    System.out.println("Node: " + node.getId() + ", Latitude: " + node.getLatitude() + ", Longitude: " + node.getLongitude());
+                    nodeService.createNode(node);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}

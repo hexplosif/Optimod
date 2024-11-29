@@ -13,3 +13,9 @@ public class OptimodView {
         // Display the delivery requests
     }
 }
+
+/*
+    * En fait ça marche pas comme ça, il y a pas de dossier view ou une classe view, la view c'est juste la page html (si j'ai bien compris)
+    *
+    * Donc à supprimer
+ */

@@ -1,11 +1,113 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Optimod</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+          crossorigin="anonymous">
+
+    <title>Optimod - Carte</title>
+
+    <style>
+        body {
+            padding-top: 50px;
+        }
+        .special {
+            padding-top: 50px;
+        }
+        #map {
+            height: 500px;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Optimod</h1>
-    <a href="/nodes">Nodes</a>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <a class="navbar-brand" href=".">Système de gestion des nodes</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container special">
+    <h2 class="h2">Carte des Nodes</h2>
+    <div id="map"></div>
+
+    <h2 class="h2">Liste des nodes</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+            <tr>
+                <th>Id</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${nodes.empty}">
+                <td colspan="3">Aucun node en base de données</td>
+            </tr>
+            <tr th:each="node: ${nodes}">
+                <td><span th:text="${node.id}"> Prénom </span></td>
+                <td><span th:text="${node.latitude}"> Nom </span></td>
+                <td><span th:text="${node.longitude}"> Nom </span></td>
+                <td>
+                    <a th:href="@{/updateNode/{id}(id=${node.id})}"><button class="btn btn-info">Modifier</button></a>
+                    <a th:href="@{/deleteNode/{id}(id=${node.id})}"><button class="btn btn-danger">Supprimer</button></a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <h4><a th:href="@{/createNode}">Ajouter un nouveau node</a></h4>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    // Initialisation de la carte
+    var map = L.map('map').setView([48.8566, 2.3522], 13); // Coordonnées de Paris par défaut
+
+    // Ajouter une couche de carte OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Récupérer les nodes depuis le modèle Thymeleaf
+    var nodes = /*[[${nodes}]]*/ [];
+
+    // Ajouter des marqueurs pour chaque node
+    nodes.forEach(function(node) {
+        var latitude = node.latitude;
+        var longitude = node.longitude;
+        var id = node.id;
+
+        // Ajouter un marqueur sur la carte
+        L.marker([latitude, longitude])
+            .addTo(map)
+            .bindPopup("<strong>Node ID:</strong> " + id + "<br><strong>Latitude:</strong> " + latitude + "<br><strong>Longitude:</strong> " + longitude);
+    });
+
+    // Ajuster la vue pour inclure tous les marqueurs
+    if (nodes.length > 0) {
+        var bounds = L.latLngBounds(nodes.map(node => [node.latitude, node.longitude]));
+        map.fitBounds(bounds);
+    }
+</script>
+
+<script
+        src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script
+        src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
 </body>
 </html>

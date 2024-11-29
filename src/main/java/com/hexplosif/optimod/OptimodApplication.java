@@ -13,19 +13,18 @@ public class OptimodApplication implements CommandLineRunner {
 	@Autowired
 	private CustomProperties customProperties;
 
+	@Autowired
+	private OptimodController optimodController;
+
 	public static void main(String[] args) throws Exception {
-
 		SpringApplication.run(OptimodApplication.class, args);
-
-		OptimodController controller = new OptimodController();
-
-		// Call the function
-		controller.loadDeliveryRequest("petitPlan.xml", "demandeGrand9.xml");
-
 	}
 
 	@Override
 	public void run(String... args) throws Exception {
 		System.out.println("API URL: " + customProperties.getApiUrl());
+
+		// Appeler la méthode sur le contrôleur géré par Spring
+		optimodController.loadNode("petitPlan.xml");
 	}
 }
