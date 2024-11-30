@@ -1,7 +1,11 @@
 package com.hexplosif.optimod.controller;
 
+import com.hexplosif.optimod.model.DeliveryRequest;
 import com.hexplosif.optimod.model.Node;
+import com.hexplosif.optimod.model.Segment;
 import com.hexplosif.optimod.service.NodeService;
+import com.hexplosif.optimod.service.SegmentService;
+import com.hexplosif.optimod.service.DeliveryRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,10 +20,20 @@ public class NodeController {
     @Autowired
     private NodeService nodeService;
 
+    @Autowired
+    private SegmentService segmentService;
+
+    @Autowired
+    private DeliveryRequestService deliveryRequestService;
+
     @GetMapping("/")
     public String home(Model model) {
         Iterable<Node> listNode = nodeService.getAllNodes();
+        Iterable<Segment> listSegment = segmentService.getAllSegments();
+        Iterable<DeliveryRequest> listDeliveryRequest = deliveryRequestService.getAllDeliveryRequests();
         model.addAttribute("nodes", listNode);
+        model.addAttribute("segments", listSegment);
+        model.addAttribute("deliveryrequests", listDeliveryRequest);
         return "index";
     }
 

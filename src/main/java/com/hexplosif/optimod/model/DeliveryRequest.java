@@ -1,19 +1,15 @@
 package com.hexplosif.optimod.model;
 
+import lombok.Data;
+
+@Data
 public class DeliveryRequest {
-    Node pickupLocation;
-    Node deliveryLocation;
 
-    public DeliveryRequest(Node pickupLocation, Node deliveryLocation) {
-        this.pickupLocation = pickupLocation;
-        this.deliveryLocation = deliveryLocation;
-    }
+        private Long id;
 
-    public Node getPickupLocation() {
-        return pickupLocation;
-    }
+        private Long idPickup;
 
-    public Node getDeliveryLocation() {
-        return deliveryLocation;
-    }
+        private Long idDelivery;
+
+        private Long idWarehouse;
 }

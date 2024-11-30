@@ -19,8 +19,8 @@ public class DeliveryRequestProxy {
     private CustomProperties customProperties;
 
     /**
-     * Get all delivery requests from the API
-     * @return An iterable of delivery requests
+     * Get all deliveryrequests from the API
+     * @return An iterable of deliveryrequests
      */
     public Iterable<DeliveryRequest> getAllDeliveryRequests() {
         String apiUrl = customProperties.getApiUrl();
@@ -35,15 +35,15 @@ public class DeliveryRequestProxy {
                 }
         );
 
-        log.debug("Get all delivery requests called with response: " + response.toString());
+        log.debug("Get all deliveryrequests called with response: " + response.toString());
 
         return response.getBody();
     }
 
     /**
-     * Get a delivery request by its id
-     * @param id The id of the delivery request
-     * @return The delivery request
+     * Get a deliveryrequest by its id
+     * @param id The id of the deliveryrequest
+     * @return The deliveryrequest
      */
     public DeliveryRequest getDeliveryRequestById(Long id) {
         String apiUrl = customProperties.getApiUrl();
@@ -57,15 +57,15 @@ public class DeliveryRequestProxy {
                 DeliveryRequest.class
         );
 
-        log.debug("Get delivery request by id called with response: " + response.toString());
+        log.debug("Get deliveryrequest by id called with response: " + response.toString());
 
         return response.getBody();
     }
 
     /**
-     * Create a delivery request in the API
-     * @param deliveryrequest The delivery request to create
-     * @return The created delivery request
+     * Create a deliveryrequest in the API
+     * @param deliveryrequest The deliveryrequest to create
+     * @return The created deliveryrequest
      */
     public DeliveryRequest createDeliveryRequest(DeliveryRequest deliveryrequest) {
         String apiUrl = customProperties.getApiUrl();
@@ -79,33 +79,33 @@ public class DeliveryRequestProxy {
                 DeliveryRequest.class
         );
 
-        log.debug("Create delivery request called with response: " + response.toString());
+        log.debug("Create deliveryrequest called with response: " + response.toString());
 
         return response.getBody();
     }
 
     /**
-     * Delete a delivery request in the API
-     * @param id The id of the delivery request to delete
+     * Delete a deliveryrequest by its id
+     * @param id The id of the deliveryrequest
      */
     public void deleteDeliveryRequestById(Long id) {
         String apiUrl = customProperties.getApiUrl();
-        String deleteDeliveryRequestUrl = apiUrl + "/deliveryrequest/" + id;
+        String deleteDeliveryRequestByIdUrl = apiUrl + "/deliveryrequest/" + id;
 
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.delete(deleteDeliveryRequestUrl);
+        restTemplate.delete(deleteDeliveryRequestByIdUrl);
 
-        log.debug("Delete delivery request called with id: " + id);
+        log.debug("Delete deliveryrequest by id called");
     }
 
     /**
-     * Save a delivery request in the API
-     * @param deliveryrequest The delivery request to save
-     * @return The saved delivery request
+     * Save a deliveryrequest in the API
+     * @param deliveryrequest The deliveryrequest to save
+     * @return The saved deliveryrequest
      */
     public DeliveryRequest saveDeliveryRequest(DeliveryRequest deliveryrequest) {
         String apiUrl = customProperties.getApiUrl();
-        String saveDeliveryRequestUrl = apiUrl + "/deliveryrequest";
+        String saveDeliveryRequestUrl = apiUrl + "/deliveryrequest/" + deliveryrequest.getId();
 
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<DeliveryRequest> request = new HttpEntity<DeliveryRequest>(deliveryrequest);
@@ -116,7 +116,7 @@ public class DeliveryRequestProxy {
                 DeliveryRequest.class
         );
 
-        log.debug("Save delivery request called with response: " + response.toString());
+        log.debug("Save deliveryrequest called with response: " + response.toString());
 
         return response.getBody();
     }

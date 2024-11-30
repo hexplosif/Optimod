@@ -26,5 +26,7 @@ public class OptimodApplication implements CommandLineRunner {
 
 		// Appeler la méthode sur le contrôleur géré par Spring
 		optimodController.loadNode("petitPlan.xml");
+		optimodController.loadSegment("petitPlan.xml");
+		optimodController.loadDeliveryRequest("demandePetit1.xml");
 	}
 }

@@ -105,7 +105,7 @@ public class SegmentProxy {
      */
     public Segment saveSegment(Segment segment) {
         String apiUrl = customProperties.getApiUrl();
-        String saveSegmentUrl = apiUrl + "/segment";
+        String saveSegmentUrl = apiUrl + "/segment/" + segment.getId();
 
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<Segment> request = new HttpEntity<Segment>(segment);

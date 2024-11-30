@@ -26,6 +26,16 @@ public class SegmentService {
     }
 
     public Segment saveSegment(Segment segment) {
-        return segmentProxy.saveSegment(segment);
+        Segment savedSegment;
+        if (segment.getId() == null) {
+            savedSegment = segmentProxy.createSegment(segment);
+        } else {
+            savedSegment = segmentProxy.saveSegment(segment);
+        }
+        return savedSegment;
+    }
+
+    public void createSegment(Segment segment) {
+        segmentProxy.createSegment(segment);
     }
 }

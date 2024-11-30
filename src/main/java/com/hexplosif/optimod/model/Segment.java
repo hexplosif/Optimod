@@ -1,31 +1,17 @@
 package com.hexplosif.optimod.model;
 
+import lombok.Data;
+
+@Data
 public class Segment {
-    double length;
-    String name;
-    Node start;
-    Node end;
 
-    public Segment(double length, String name, Node start, Node end) {
-        this.length = length;
-        this.name = name;
-        this.start = start;
-        this.end = end;
-    }
+    private Long id;
 
-    public double getLength() {
-        return length;
-    }
+    private Long idOrigin;
 
-    public String getName() {
-        return name;
-    }
+    private Long idDestination;
 
-    public Node getStart() {
-        return start;
-    }
+    private Double length;
 
-    public Node getEnd() {
-        return end;
-    }
+    private String name;
 }

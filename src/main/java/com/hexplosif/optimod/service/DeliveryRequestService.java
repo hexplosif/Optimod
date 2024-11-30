@@ -11,21 +11,31 @@ import org.springframework.stereotype.Service;
 public class DeliveryRequestService {
 
     @Autowired
-    private DeliveryRequestProxy deliveryRequestProxy;
+    private DeliveryRequestProxy deliveryrequestProxy;
 
     public DeliveryRequest getDeliveryRequestById(Long id) {
-        return deliveryRequestProxy.getDeliveryRequestById(id);
+        return deliveryrequestProxy.getDeliveryRequestById(id);
     }
 
     public Iterable<DeliveryRequest> getAllDeliveryRequests() {
-        return deliveryRequestProxy.getAllDeliveryRequests();
+        return deliveryrequestProxy.getAllDeliveryRequests();
     }
 
     public void deleteDeliveryRequestById(Long id) {
-        deliveryRequestProxy.deleteDeliveryRequestById(id);
+        deliveryrequestProxy.deleteDeliveryRequestById(id);
     }
 
-    public DeliveryRequest saveDeliveryRequest(DeliveryRequest deliveryRequest) {
-        return deliveryRequestProxy.saveDeliveryRequest(deliveryRequest);
+    public DeliveryRequest saveDeliveryRequest(DeliveryRequest deliveryrequest) {
+        DeliveryRequest savedDeliveryRequest;
+        if (deliveryrequest.getId() == null) {
+            savedDeliveryRequest = deliveryrequestProxy.createDeliveryRequest(deliveryrequest);
+        } else {
+            savedDeliveryRequest = deliveryrequestProxy.saveDeliveryRequest(deliveryrequest);
+        }
+        return savedDeliveryRequest;
+    }
+
+    public void createDeliveryRequest(DeliveryRequest deliveryrequest) {
+        deliveryrequestProxy.createDeliveryRequest(deliveryrequest);
     }
 }

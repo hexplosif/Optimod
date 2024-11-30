@@ -13,6 +13,11 @@
           integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
           crossorigin="anonymous">
 
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <link href="css/leaflet.icon-material.css" rel="stylesheet">
+    <script src="js/leaflet.icon-material.js"></script>
+
     <title>Optimod - Carte</title>
 
     <style>
@@ -69,6 +74,65 @@
         </table>
         <h4><a th:href="@{/createNode}">Ajouter un nouveau node</a></h4>
     </div>
+
+    <h2 class="h2">Liste des segments</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+            <tr>
+                <th>Id</th>
+                <th>Node de départ</th>
+                <th>Node d'arrivée</th>
+                <th>Longueur</th>
+                <th>Name</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${segments.empty}">
+                <td colspan="4">Aucun segment en base de données</td>
+            </tr>
+            <tr th:each="segment: ${segments}">
+                <td><span th:text="${segment.id}"> Id </span></td>
+                <td><span th:text="${segment.idOrigin}"> Origine </span></td>
+                <td><span th:text="${segment.idDestination}"> Destination </span></td>
+                <td><span th:text="${segment.length}"> Longueur </span></td>
+                <td><span th:text="${segment.name}"> Nom </span></td>
+                <td>
+                    <a th:href="@{/updateSegment/{id}(id=${segment.id})}"><button class="btn btn-info">Modifier</button></a>
+                    <a th:href="@{/deleteSegment/{id}(id=${segment.id})}"><button class="btn btn-danger">Supprimer</button></a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <h4><a th:href="@{/createSegment}">Ajouter un nouveau segment</a></h4>
+    </div>
+
+    <h2 class="h2">Liste des livraisons</h2>
+    <table class="table table-striped table-sm">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Pickup</th>
+            <th>Delivery</th>
+            <th>Warehouse</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${deliveryrequests.empty}">
+            <td colspan="4">Aucune livraison en base de données</td>
+        </tr>
+        <tr th:each="delivery: ${deliveryrequests}">
+            <td><span th:text="${delivery.id}"> Id </span></td>
+            <td><span th:text="${delivery.idPickup}"> Pickup </span></td>
+            <td><span th:text="${delivery.idDelivery}"> Delivery </span></td>
+            <td><span th:text="${delivery.idWarehouse}"> Warehouse </span></td>
+            <td>
+                <a th:href="@{/updateDeliveryRequest/{id}(id=${delivery.id})}"><button class="btn btn-info">Modifier</button></a>
+                <a th:href="@{/deleteDeliveryRequest/{id}(id=${delivery.id})}"><button class="btn btn-danger">Supprimer</button></a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 </div>
 
 <script th:inline="javascript">
@@ -81,19 +145,49 @@
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Récupérer les nodes depuis le modèle Thymeleaf
+    // Récupérer les nodes, segments et deliveryrequests depuis le modèle Thymeleaf
     var nodes = /*[[${nodes}]]*/ [];
+    var segments = /*[[${segments}]]*/ [];
+    var deliveryrequests = /*[[${deliveryrequests}]]*/ [];
 
     // Ajouter des marqueurs pour chaque node
-    nodes.forEach(function(node) {
-        var latitude = node.latitude;
-        var longitude = node.longitude;
-        var id = node.id;
+    // En fait non, on ne va pas les afficher, c'est trop de marqueurs
 
-        // Ajouter un marqueur sur la carte
-        L.marker([latitude, longitude])
+    // Ajouter des lignes pour chaque segment
+    segments.forEach(function(segment) {
+        var origin = nodes.find(node => node.id === segment.idOrigin);
+        var destination = nodes.find(node => node.id === segment.idDestination);
+
+        // Ajouter une ligne sur la carte
+        L.polyline([
+            [origin.latitude, origin.longitude],
+            [destination.latitude, destination.longitude]
+        ], {color: 'red'}).addTo(map);
+    });
+
+    // Ajouter un marqueur pour la warehouse en vert
+    var warehouse = deliveryrequests.find(delivery => delivery.idWarehouse !== null);
+    if (warehouse) {
+        var warehouseNode = nodes.find(node => node.id === warehouse.idWarehouse);
+        L.marker([warehouseNode.latitude, warehouseNode.longitude], {icon: L.icon({iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]})})
             .addTo(map)
-            .bindPopup("<strong>Node ID:</strong> " + id + "<br><strong>Latitude:</strong> " + latitude + "<br><strong>Longitude:</strong> " + longitude);
+            .bindPopup("<strong>Warehouse</strong>");
+    }
+
+    // Ajouter des marqueurs pour chaque pickup et delivery
+    deliveryrequests.forEach(function(delivery) {
+        var pickup = nodes.find(node => node.id === delivery.idPickup);
+        var deliveryNode = nodes.find(node => node.id === delivery.idDelivery);
+
+        // Ajouter un marqueur pour le pickup en bleu
+        L.marker([pickup.latitude, pickup.longitude], {icon: L.icon({iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]})})
+            .addTo(map)
+            .bindPopup("<strong>Pickup</strong>");
+
+        // Ajouter un marqueur pour le delivery en orange
+        L.marker([deliveryNode.latitude, deliveryNode.longitude], {icon: L.icon({iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]})})
+            .addTo(map)
+            .bindPopup("<strong>Delivery</strong>");
     });
 
     // Ajuster la vue pour inclure tous les marqueurs
