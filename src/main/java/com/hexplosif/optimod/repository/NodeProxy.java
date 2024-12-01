@@ -120,4 +120,14 @@ public class NodeProxy {
 
         return response.getBody();
     }
+
+    public void deleteAllNodes() {
+        String apiUrl = customProperties.getApiUrl();
+        String deleteAllNodesUrl = apiUrl + "/nodes";
+
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.delete(deleteAllNodesUrl);
+
+        log.debug("Delete all nodes called");
+    }
 }

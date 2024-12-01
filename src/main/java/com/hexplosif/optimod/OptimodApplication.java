@@ -23,10 +23,5 @@ public class OptimodApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		System.out.println("API URL: " + customProperties.getApiUrl());
-
-		// Appeler la méthode sur le contrôleur géré par Spring
-		optimodController.loadNode("petitPlan.xml");
-		optimodController.loadSegment("petitPlan.xml");
-		optimodController.loadDeliveryRequest("demandePetit1.xml");
 	}
 }

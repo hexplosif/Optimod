@@ -26,14 +26,10 @@ public class NodeController {
     @Autowired
     private DeliveryRequestService deliveryRequestService;
 
-    @GetMapping("/")
+    @GetMapping("/nodes")
     public String home(Model model) {
         Iterable<Node> listNode = nodeService.getAllNodes();
-        Iterable<Segment> listSegment = segmentService.getAllSegments();
-        Iterable<DeliveryRequest> listDeliveryRequest = deliveryRequestService.getAllDeliveryRequests();
         model.addAttribute("nodes", listNode);
-        model.addAttribute("segments", listSegment);
-        model.addAttribute("deliveryrequests", listDeliveryRequest);
         return "index";
     }
 

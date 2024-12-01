@@ -120,4 +120,14 @@ public class SegmentProxy {
 
         return response.getBody();
     }
+
+    public void deleteAllSegments() {
+        String apiUrl = customProperties.getApiUrl();
+        String deleteAllSegmentsUrl = apiUrl + "/segments";
+
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.delete(deleteAllSegmentsUrl);
+
+        log.debug("Delete all segments called");
+    }
 }

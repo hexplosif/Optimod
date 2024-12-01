@@ -120,4 +120,14 @@ public class DeliveryRequestProxy {
 
         return response.getBody();
     }
+
+    public void deleteAllDeliveryRequests() {
+        String apiUrl = customProperties.getApiUrl();
+        String deleteAllDeliveryRequestsUrl = apiUrl + "/deliveryrequests";
+
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.delete(deleteAllDeliveryRequestsUrl);
+
+        log.debug("Delete all deliveryrequests called");
+    }
 }

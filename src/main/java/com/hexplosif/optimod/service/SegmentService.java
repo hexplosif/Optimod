@@ -38,4 +38,8 @@ public class SegmentService {
     public void createSegment(Segment segment) {
         segmentProxy.createSegment(segment);
     }
+
+    public void deleteAllSegments() {
+        segmentProxy.deleteAllSegments();
+    }
 }

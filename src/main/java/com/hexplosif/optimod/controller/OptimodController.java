@@ -1,26 +1,22 @@
 package com.hexplosif.optimod.controller;
 
-import java.io.File;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.hexplosif.optimod.model.DeliveryRequest;
 import com.hexplosif.optimod.model.Node;
 import com.hexplosif.optimod.model.Segment;
-import com.hexplosif.optimod.model.DeliveryRequest;
-import com.hexplosif.optimod.service.DeliveryRequestService;
-import com.hexplosif.optimod.service.NodeService;
-import com.hexplosif.optimod.service.SegmentService;
+import com.hexplosif.optimod.service.OptimodService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Element;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
-/*
-    * Ptn mais c'est quoi ce code
-    * Non vraiment la faut tout refaire, c'est aberrant je pleure mais cest quoi ça meme copilot il sait plus quoi dire
-    * Bon je refait tout mais je laisse le code d'origine en commentaire
- */
 
 /*
 public class OptimodController {
@@ -209,138 +205,69 @@ public class OptimodController {
 public class OptimodController {
 
     @Autowired
-    private NodeService nodeService;
+    private OptimodService optimodService;
 
-    @Autowired
-    private SegmentService segmentService;
-
-    @Autowired
-    private DeliveryRequestService deliveryRequestService;
-
-    /**
-     * Parse the XML file
-     * @param file The XML file
-     * @return The document
-     */
-    private Document parseXMLFile(File file) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document document = builder.parse(file);
-        document.getDocumentElement().normalize();
-        return document;
+    @GetMapping("/")
+    public String home(Model model) {
+        Iterable<Node> listNode = optimodService.getAllNodes();
+        Iterable<Segment> listSegment = optimodService.getAllSegments();
+        Iterable<DeliveryRequest> listDeliveryRequest = optimodService.getAllDeliveryRequests();
+        model.addAttribute("nodes", listNode);
+        model.addAttribute("segments", listSegment);
+        model.addAttribute("deliveryrequests", listDeliveryRequest);
+        return "index";
     }
 
-
-    // Le code doit être dans service et on fait loadMap avec dedans loadNode et loadSegment
-    /**
-     * Load the nodes from the XML file
-     * @param XMLFileName The XML file
-     */
-    public void loadNode(String XMLFileName) {
-
+    @PostMapping("/loadMap")
+    public ResponseEntity<Map<String, Object>> loadMap(@RequestParam("file") MultipartFile file) {
         try {
-            File XMLFile = new File("src/main/java/com/hexplosif/optimod/ressources/" + XMLFileName);
-            Document document = parseXMLFile(XMLFile);
-            NodeList nodeList = document.getElementsByTagName("noeud");
+            String XMLFileName = saveUploadedFile(file);
 
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                org.w3c.dom.Node noeud = nodeList.item(i);
+            // Supprimer les données existantes
+            optimodService.deleteAllNodes();
+            optimodService.deleteAllSegments();
 
-                if (noeud.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                    Element elementNoeud = (Element) noeud;
+            // Charger les données
+            optimodService.loadNode(XMLFileName);
+            optimodService.loadSegment(XMLFileName);
 
-                    String idNoeud = elementNoeud.getAttribute("id");
-                    String latitudeNoeud = elementNoeud.getAttribute("latitude");
-                    String longitudeNoeud = elementNoeud.getAttribute("longitude");
+            // Renvoyer les données mises à jour
+            Map<String, Object> response = new HashMap<>();
+            response.put("nodes", optimodService.getAllNodes()); // Renvoie les nodes
+            response.put("segments", optimodService.getAllSegments()); // Renvoie les segments
 
-                    Node node = new Node();
-                    node.setId(Long.parseLong(idNoeud));
-                    node.setLatitude(Double.parseDouble(latitudeNoeud));
-                    node.setLongitude(Double.parseDouble(longitudeNoeud));
-
-                    System.out.println("Node: " + node.getId() + ", Latitude: " + node.getLatitude() + ", Longitude: " + node.getLongitude());
-                    nodeService.createNode(node);
-                }
-            }
-
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Erreur lors du chargement de la carte."));
         }
     }
 
-    /**
-     * Load the segments from the XML file
-     * @param XMLFileName The XML file
-     */
-    public void loadSegment(String XMLFileName) {
-
+    @PostMapping("/loadDeliveryRequest")
+    public ResponseEntity<Map<String, Object>> loadDeliveryRequest(@RequestParam("file") MultipartFile file) {
         try {
-            File XMLFile = new File("src/main/java/com/hexplosif/optimod/ressources/" + XMLFileName);
-            Document document = parseXMLFile(XMLFile);
-            NodeList listeTroncons = document.getElementsByTagName("troncon");
+            String XMLFileName = saveUploadedFile(file);
 
-            for (int i = 0; i < listeTroncons.getLength(); i++) {
-                org.w3c.dom.Node troncon = listeTroncons.item(i);
+            // Supprimer les données existantes
+            optimodService.deleteAllDeliveryRequests();
 
-                if (troncon.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                    Element elementTroncon = (Element) troncon;
+            // Charger les données
+            optimodService.loadDeliveryRequest(XMLFileName);
 
-                    String origineTroncon = elementTroncon.getAttribute("origine");
-                    String destinationTroncon = elementTroncon.getAttribute("destination");
-                    String longueurTroncon = elementTroncon.getAttribute("longueur");
-                    String nomRueTroncon = elementTroncon.getAttribute("nomRue");
+            // Renvoyer les données mises à jour
+            Map<String, Object> response = new HashMap<>();
+            response.put("deliveryrequests", optimodService.getAllDeliveryRequests()); // Renvoie les demandes de livraisons
 
-                    Segment segment = new Segment();
-                    segment.setIdOrigin(Long.parseLong(origineTroncon));
-                    segment.setIdDestination(Long.parseLong(destinationTroncon));
-                    segment.setLength(Double.parseDouble(longueurTroncon));
-                    segment.setName(nomRueTroncon);
-
-                    System.out.println("Segment: " + segment.getIdOrigin() + ", Destination: " + segment.getIdDestination() + ", Length: " + segment.getLength() + ", Name: " + segment.getName());
-                    segmentService.createSegment(segment);
-                }
-            }
-
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Erreur lors du chargement de la carte."));
         }
     }
 
-    /**
-     * Load the delivery request from the XML file
-     * @param XMLDeliveryRequest The XML delivery request file
-     */
-
-    public void loadDeliveryRequest(String XMLDeliveryRequest) {
-
-        try {
-            File XMLFile = new File("src/main/java/com/hexplosif/optimod/ressources/" + XMLDeliveryRequest);
-            Document document = parseXMLFile(XMLFile);
-            NodeList listeLivraisons = document.getElementsByTagName("livraison");
-            org.w3c.dom.Node warehouse = document.getElementsByTagName("entrepot").item(0); // Warehouse is the first element
-            String warehouseAddress = ((Element) warehouse).getAttribute("adresse");
-
-            for (int i = 0; i < listeLivraisons.getLength(); i++) {
-                org.w3c.dom.Node livraison = listeLivraisons.item(i);
-
-                if (livraison.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                    Element elementLivraison = (Element) livraison;
-
-                    String adresseEnlevement = elementLivraison.getAttribute("adresseEnlevement");
-                    String adresseLivraison = elementLivraison.getAttribute("adresseLivraison");
-
-                    DeliveryRequest deliveryRequest = new DeliveryRequest();
-                    deliveryRequest.setIdDelivery(Long.parseLong(adresseEnlevement));
-                    deliveryRequest.setIdPickup(Long.parseLong(adresseLivraison));
-                    deliveryRequest.setIdWarehouse(Long.parseLong(warehouseAddress));
-
-                    System.out.println("DeliveryRequest: " + deliveryRequest.getIdDelivery() + ", Pickup: " + deliveryRequest.getIdPickup() + ", WarehouseLocation: " + deliveryRequest.getIdWarehouse());
-                    deliveryRequestService.createDeliveryRequest(deliveryRequest);
-                }
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+    private String saveUploadedFile(MultipartFile file) throws IOException {
+        String tempFileName = System.getProperty("java.io.tmpdir") + file.getOriginalFilename();
+        file.transferTo(new java.io.File(tempFileName));
+        return tempFileName;
     }
 }

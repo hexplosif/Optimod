@@ -38,4 +38,8 @@ public class NodeService {
     public void createNode(Node node) {
         nodeProxy.createNode(node);
     }
+
+    public void deleteAllNodes() {
+        nodeProxy.deleteAllNodes();
+    }
 }

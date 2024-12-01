@@ -38,4 +38,8 @@ public class DeliveryRequestService {
     public void createDeliveryRequest(DeliveryRequest deliveryrequest) {
         deliveryrequestProxy.createDeliveryRequest(deliveryrequest);
     }
+
+    public void deleteAllDeliveryRequests() {
+        deliveryrequestProxy.deleteAllDeliveryRequests();
+    }
 }
