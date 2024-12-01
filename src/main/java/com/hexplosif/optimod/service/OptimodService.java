@@ -45,7 +45,7 @@ public class OptimodService {
      * Load the nodes from the XML file
      * @param XMLFileName The XML file
      */
-    public void loadNode(String XMLFileName) {
+    public void loadNode(String XMLFileName) throws Exception{
 
         try {
             File XMLFile = new File(XMLFileName);
@@ -74,6 +74,7 @@ public class OptimodService {
 
         } catch (Exception e) {
             e.printStackTrace();
+            throw new Exception("Error while loading node");
         }
     }
 
@@ -81,7 +82,7 @@ public class OptimodService {
      * Load the segments from the XML file
      * @param XMLFileName The XML file
      */
-    public void loadSegment(String XMLFileName) {
+    public void loadSegment(String XMLFileName) throws Exception {
 
         try {
             File XMLFile = new File(XMLFileName);
@@ -112,6 +113,7 @@ public class OptimodService {
 
         } catch (Exception e) {
             e.printStackTrace();
+            throw new Exception("Error while loading segment");
         }
     }
 
@@ -120,7 +122,7 @@ public class OptimodService {
      * @param XMLDeliveryRequest The XML delivery request file
      */
 
-    public void loadDeliveryRequest(String XMLDeliveryRequest) {
+    public void loadDeliveryRequest(String XMLDeliveryRequest) throws Exception {
 
         try {
             File XMLFile = new File(XMLDeliveryRequest);
@@ -150,6 +152,7 @@ public class OptimodService {
         }
         catch (Exception e) {
             e.printStackTrace();
+            throw new Exception("Error while loading delivery request");
         }
     }
 
