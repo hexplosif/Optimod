@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
-@Component
+@Component  //todo: aled
 public class NodeProxy {
 
     @Autowired

@@ -20,12 +20,6 @@ public class NodeController {
     @Autowired
     private NodeService nodeService;
 
-    @Autowired
-    private SegmentService segmentService;
-
-    @Autowired
-    private DeliveryRequestService deliveryRequestService;
-
     @GetMapping("/nodes")
     public String home(Model model) {
         Iterable<Node> listNode = nodeService.getAllNodes();

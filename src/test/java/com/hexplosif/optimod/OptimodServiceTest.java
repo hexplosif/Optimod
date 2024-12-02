@@ -1,4 +1,4 @@
-package com.hexplosif.service;
+package com.hexplosif.optimod;
 
 import com.hexplosif.optimod.service.DeliveryRequestService;
 import com.hexplosif.optimod.service.NodeService;

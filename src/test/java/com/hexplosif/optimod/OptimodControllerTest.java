@@ -1,10 +1,4 @@
-package com.hexplosif.controller;
-
-import com.hexplosif.optimod.controller.OptimodController;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.web.multipart.MultipartFile;
+package com.hexplosif.optimod;
 
 public class OptimodControllerTest {
 
