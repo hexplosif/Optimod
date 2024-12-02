@@ -1,4 +1,4 @@
-package com.hexplosif.optimod.repository;
+package com.hexplosif.optimod.proxy;
 
 import com.hexplosif.optimod.CustomProperties;
 import com.hexplosif.optimod.model.Node;
@@ -85,6 +85,30 @@ public class NodeProxy {
     }
 
     /**
+     * Create multiple nodes in the API
+     * @param nodes The nodes to create
+     * @return The created nodes
+     */
+    public Iterable<Node> createNodes(Iterable<Node> nodes) {
+        String apiUrl = customProperties.getApiUrl();
+        String createNodesUrl = apiUrl + "/nodes";
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<Iterable<Node>> request = new HttpEntity<Iterable<Node>>(nodes);
+        ResponseEntity<Iterable<Node>> response = restTemplate.exchange(
+                createNodesUrl,
+                HttpMethod.POST,
+                request,
+                new ParameterizedTypeReference<Iterable<Node>>() {
+                }
+        );
+
+        log.debug("Create nodes called with response: " + response.toString());
+
+        return response.getBody();
+    }
+
+    /**
      * Delete a node by its id
      * @param id The id of the node
      */
@@ -121,6 +145,9 @@ public class NodeProxy {
         return response.getBody();
     }
 
+    /**
+     * Delete all nodes
+     */
     public void deleteAllNodes() {
         String apiUrl = customProperties.getApiUrl();
         String deleteAllNodesUrl = apiUrl + "/nodes";

@@ -13,6 +13,7 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.util.List;
 
 @Data
 @Service
@@ -52,6 +53,8 @@ public class OptimodService {
             Document document = parseXMLFile(XMLFile);
             NodeList nodeList = document.getElementsByTagName("noeud");
 
+            List<Node> tmpListNodes = (List<Node>) nodeService.getAllNodes();
+
             for (int i = 0; i < nodeList.getLength(); i++) {
                 org.w3c.dom.Node noeud = nodeList.item(i);
 
@@ -68,9 +71,13 @@ public class OptimodService {
                     node.setLongitude(Double.parseDouble(longitudeNoeud));
 
                     //System.out.println("Node: " + node.getId() + ", Latitude: " + node.getLatitude() + ", Longitude: " + node.getLongitude());
-                    nodeService.createNode(node);
+                    tmpListNodes.add(node);
+
+
                 }
             }
+
+            nodeService.createNodes(tmpListNodes);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -88,6 +95,8 @@ public class OptimodService {
             File XMLFile = new File(XMLFileName);
             Document document = parseXMLFile(XMLFile);
             NodeList listeTroncons = document.getElementsByTagName("troncon");
+
+            List<Segment> tmpListSegments = (List<Segment>) segmentService.getAllSegments();
 
             for (int i = 0; i < listeTroncons.getLength(); i++) {
                 org.w3c.dom.Node troncon = listeTroncons.item(i);
@@ -107,9 +116,11 @@ public class OptimodService {
                     segment.setName(nomRueTroncon);
 
                     //System.out.println("Segment: " + segment.getIdOrigin() + ", Destination: " + segment.getIdDestination() + ", Length: " + segment.getLength() + ", Name: " + segment.getName());
-                    segmentService.createSegment(segment);
+                    tmpListSegments.add(segment);
                 }
             }
+
+            segmentService.createSegments(tmpListSegments);
 
         } catch (Exception e) {
             e.printStackTrace();

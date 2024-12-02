@@ -1,4 +1,4 @@
-package com.hexplosif.optimod.repository;
+package com.hexplosif.optimod.proxy;
 
 import com.hexplosif.optimod.CustomProperties;
 import com.hexplosif.optimod.model.DeliveryRequest;

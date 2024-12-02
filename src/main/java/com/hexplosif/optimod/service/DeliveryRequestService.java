@@ -1,7 +1,7 @@
 package com.hexplosif.optimod.service;
 
 import com.hexplosif.optimod.model.DeliveryRequest;
-import com.hexplosif.optimod.repository.DeliveryRequestProxy;
+import com.hexplosif.optimod.proxy.DeliveryRequestProxy;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

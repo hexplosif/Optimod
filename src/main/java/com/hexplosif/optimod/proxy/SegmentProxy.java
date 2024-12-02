@@ -1,4 +1,4 @@
-package com.hexplosif.optimod.repository;
+package com.hexplosif.optimod.proxy;
 
 import com.hexplosif.optimod.CustomProperties;
 import com.hexplosif.optimod.model.Segment;
@@ -10,6 +10,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 
 @Slf4j
 @Component
@@ -129,5 +131,20 @@ public class SegmentProxy {
         restTemplate.delete(deleteAllSegmentsUrl);
 
         log.debug("Delete all segments called");
+    }
+
+    public void createSegments(List<Segment> tmpListSegments) {
+        String apiUrl = customProperties.getApiUrl();
+        String createSegmentsUrl = apiUrl + "/segments";
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<List<Segment>> request = new HttpEntity<List<Segment>>(tmpListSegments);
+        ResponseEntity<List<Segment>> response = restTemplate.exchange(
+                createSegmentsUrl,
+                HttpMethod.POST,
+                request,
+                new ParameterizedTypeReference<List<Segment>>() {
+                }
+        );
     }
 }

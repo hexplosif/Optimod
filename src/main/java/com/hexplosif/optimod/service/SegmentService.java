@@ -1,10 +1,12 @@
 package com.hexplosif.optimod.service;
 
 import com.hexplosif.optimod.model.Segment;
-import com.hexplosif.optimod.repository.SegmentProxy;
+import com.hexplosif.optimod.proxy.SegmentProxy;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Data
 @Service
@@ -41,5 +43,9 @@ public class SegmentService {
 
     public void deleteAllSegments() {
         segmentProxy.deleteAllSegments();
+    }
+
+    public void createSegments(List<Segment> tmpListSegments) {
+        segmentProxy.createSegments(tmpListSegments);
     }
 }

@@ -1,10 +1,12 @@
 package com.hexplosif.optimod.service;
 
 import com.hexplosif.optimod.model.Node;
-import com.hexplosif.optimod.repository.NodeProxy;
+import com.hexplosif.optimod.proxy.NodeProxy;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Data
 @Service
@@ -41,5 +43,9 @@ public class NodeService {
 
     public void deleteAllNodes() {
         nodeProxy.deleteAllNodes();
+    }
+
+    public void createNodes(List<Node> nodes) {
+        nodeProxy.createNodes(nodes);
     }
 }
