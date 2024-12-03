@@ -208,6 +208,9 @@
     function uploadMap(url, formId) {
         const formData = new FormData(document.getElementById(formId));
 
+        //Afficher la map
+        document.getElementById('map').style.display = 'block';
+
         showLoading();
 
         fetch(url, {
@@ -216,6 +219,9 @@
         })
             .then(response => {
                 if (!response.ok) {
+
+                    //Cacher la map
+                    document.getElementById('map').style.display = 'none';
 
                     return response.json().then(errorData => {
                         // Lever une erreur avec le message du backend
@@ -295,9 +301,6 @@
             }
         });
 
-        //Afficher la map
-        document.getElementById('map').style.display = 'block';
-
         // Ajuster la vue pour inclure tous les marqueurs
         if (nodes.length > 0) {
             const bounds = L.latLngBounds(nodes.map(node => [node.latitude, node.longitude]));
@@ -317,14 +320,21 @@
         var nodes = /*[[${nodes}]]*/ [];
 
         if (nodes.length == 0) {
-            console.log("No nodes");
+            document.getElementById('message').innerHTML = `<div class="alert alert-danger">Veuillez charger une carte avant de charger les livraisons</div>`;
             return;
         }
 
         // Ajouter un marqueur pour la warehouse en vert
         const warehouse = deliveryrequests.find(delivery => delivery.idWarehouse !== null);
+
         if (warehouse) {
             const warehouseNode = nodes.find(node => node.id === warehouse.idWarehouse);
+
+            if (!warehouseNode) {
+                document.getElementById('message').innerHTML = `<div class="alert alert-danger">Veuillez charger une carte assez grande avant de charger les livraisons</div>`;
+                return;
+            }
+
             L.marker([warehouseNode.latitude, warehouseNode.longitude], { icon: L.icon({ iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] }) })
                 .addTo(map)
                 .bindPopup("<strong>Warehouse</strong>");
@@ -345,6 +355,9 @@
                 L.marker([deliveryNode.latitude, deliveryNode.longitude], { icon: L.icon({ iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] }) })
                     .addTo(map)
                     .bindPopup("<strong>Delivery</strong>");
+            } else {
+                document.getElementById('message').innerHTML = `<div class="alert alert-danger">Veuillez charger une carte assez grande avant de charger les livraisons</div>`;
+                return;
             }
         });
     }

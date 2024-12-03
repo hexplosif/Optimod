@@ -7,8 +7,9 @@ import java.util.Map;
 import com.hexplosif.optimod.model.DeliveryRequest;
 import com.hexplosif.optimod.model.Node;
 import com.hexplosif.optimod.model.Segment;
-import com.hexplosif.optimod.service.OptimodService;
+import com.hexplosif.optimod.proxy.OptimodProxy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -205,13 +206,13 @@ public class OptimodController {
 public class OptimodController {
 
     @Autowired
-    private OptimodService optimodService;
+    private OptimodProxy optimodProxy;
 
     @GetMapping("/")
     public String home(Model model) {
-        Iterable<Node> listNode = optimodService.getAllNodes();
-        Iterable<Segment> listSegment = optimodService.getAllSegments();
-        Iterable<DeliveryRequest> listDeliveryRequest = optimodService.getAllDeliveryRequests();
+        Iterable<Node> listNode = optimodProxy.getAllNodes();
+        Iterable<Segment> listSegment = optimodProxy.getAllSegments();
+        Iterable<DeliveryRequest> listDeliveryRequest = optimodProxy.getAllDeliveryRequests();
         model.addAttribute("nodes", listNode);
         model.addAttribute("segments", listSegment);
         model.addAttribute("deliveryrequests", listDeliveryRequest);
@@ -221,24 +222,19 @@ public class OptimodController {
     @PostMapping("/loadMap")
     public ResponseEntity<Map<String, Object>> loadMap(@RequestParam("file") MultipartFile file) {
         try {
-            String XMLFileName = saveUploadedFile(file);
 
-            // Supprimer les données existantes
-            optimodService.deleteAllNodes();
-            optimodService.deleteAllSegments();
+            Map<String, Object> response = optimodProxy.loadMap(file);
 
-            // Charger les données
-            optimodService.loadNode(XMLFileName);
-            optimodService.loadSegment(XMLFileName);
-
-            // Renvoyer les données mises à jour
-            Map<String, Object> response = new HashMap<>();
-            response.put("nodes", optimodService.getAllNodes()); // Renvoie les nodes
-            response.put("segments", optimodService.getAllSegments()); // Renvoie les segments
+            if (response.containsKey("error")) {
+                // Propager l'erreur du service en tant que réponse HTTP 500
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            }
 
             return ResponseEntity.ok(response);
+
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println("Error: " + e.getMessage());
             return ResponseEntity.status(500).body(Map.of(
                     "error", "Erreur lors du chargement de la carte.",
                     "details", e.getMessage()
@@ -249,19 +245,16 @@ public class OptimodController {
     @PostMapping("/loadDeliveryRequest")
     public ResponseEntity<Map<String, Object>> loadDeliveryRequest(@RequestParam("file") MultipartFile file) {
         try {
-            String XMLFileName = saveUploadedFile(file);
 
-            // Supprimer les données existantes
-            optimodService.deleteAllDeliveryRequests();
+            Map<String, Object> response = optimodProxy.loadDeliveryRequest(file);
 
-            // Charger les données
-            optimodService.loadDeliveryRequest(XMLFileName);
-
-            // Renvoyer les données mises à jour
-            Map<String, Object> response = new HashMap<>();
-            response.put("deliveryrequests", optimodService.getAllDeliveryRequests()); // Renvoie les demandes de livraisons
+            if (response.containsKey("error")) {
+                // Propager l'erreur du service en tant que réponse HTTP 500
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            }
 
             return ResponseEntity.ok(response);
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of(
@@ -270,8 +263,6 @@ public class OptimodController {
             ));
         }
     }
-
-
 
     private String saveUploadedFile(MultipartFile file) throws IOException {
         String tempFileName = System.getProperty("java.io.tmpdir") + file.getOriginalFilename();
