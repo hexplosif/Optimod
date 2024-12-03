@@ -3,6 +3,9 @@ package com.hexplosif.optimod.service;
 import com.hexplosif.optimod.model.DeliveryRequest;
 import com.hexplosif.optimod.model.Node;
 import com.hexplosif.optimod.model.Segment;
+import com.hexplosif.optimod.proxy.DeliveryRequestProxy;
+import com.hexplosif.optimod.proxy.NodeProxy;
+import com.hexplosif.optimod.proxy.SegmentProxy;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,13 +23,13 @@ import java.util.List;
 public class OptimodService {
 
     @Autowired
-    private NodeService nodeService;
+    private NodeProxy nodeProxy;
 
     @Autowired
-    private SegmentService segmentService;
+    private SegmentProxy segmentProxy;
 
     @Autowired
-    private DeliveryRequestService deliveryRequestService;
+    private DeliveryRequestProxy deliveryRequestProxy;
 
     /**
      * Parse the XML file
@@ -41,7 +44,6 @@ public class OptimodService {
         return document;
     }
 
-    // Le code doit être dans service et on fait loadMap avec dedans loadNode et loadSegment
     /**
      * Load the nodes from the XML file
      * @param XMLFileName The XML file
@@ -53,7 +55,7 @@ public class OptimodService {
             Document document = parseXMLFile(XMLFile);
             NodeList nodeList = document.getElementsByTagName("noeud");
 
-            List<Node> tmpListNodes = (List<Node>) nodeService.getAllNodes();
+            List<Node> tmpListNodes = (List<Node>) nodeProxy.getAllNodes();
 
             for (int i = 0; i < nodeList.getLength(); i++) {
                 org.w3c.dom.Node noeud = nodeList.item(i);
@@ -77,7 +79,7 @@ public class OptimodService {
                 }
             }
 
-            nodeService.createNodes(tmpListNodes);
+            nodeProxy.createNodes(tmpListNodes);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -96,7 +98,7 @@ public class OptimodService {
             Document document = parseXMLFile(XMLFile);
             NodeList listeTroncons = document.getElementsByTagName("troncon");
 
-            List<Segment> tmpListSegments = (List<Segment>) segmentService.getAllSegments();
+            List<Segment> tmpListSegments = (List<Segment>) segmentProxy.getAllSegments();
 
             for (int i = 0; i < listeTroncons.getLength(); i++) {
                 org.w3c.dom.Node troncon = listeTroncons.item(i);
@@ -120,7 +122,7 @@ public class OptimodService {
                 }
             }
 
-            segmentService.createSegments(tmpListSegments);
+            segmentProxy.createSegments(tmpListSegments);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -157,7 +159,7 @@ public class OptimodService {
                     deliveryRequest.setIdWarehouse(Long.parseLong(warehouseAddress));
 
                     //System.out.println("DeliveryRequest: " + deliveryRequest.getIdDelivery() + ", Pickup: " + deliveryRequest.getIdPickup() + ", WarehouseLocation: " + deliveryRequest.getIdWarehouse());
-                    deliveryRequestService.createDeliveryRequest(deliveryRequest);
+                    deliveryRequestProxy.createDeliveryRequest(deliveryRequest);
                 }
             }
         }
@@ -168,11 +170,75 @@ public class OptimodService {
     }
 
     /**
+     * Get a node by its id
+     * @param id The id of the node
+     * @return The node
+     */
+    public Node getNodeById(Long id) {
+        return nodeProxy.getNodeById(id);
+    }
+
+    /**
      * Get all nodes
      * @return The list of nodes
      */
     public Iterable<Node> getAllNodes() {
-        return nodeService.getAllNodes();
+        return nodeProxy.getAllNodes();
+    }
+
+    /**
+     * Delete a node by its id
+     * @param id The id of the node
+     */
+    public void deleteNodeById(Long id) {
+        nodeProxy.deleteNodeById(id);
+    }
+
+    /**
+     * Save a node
+     * @param node The node to save
+     * @return The saved node
+     */
+    public Node saveNode(Node node) {
+        Node savedNode;
+        if (node.getId() == null) {
+            savedNode = nodeProxy.createNode(node);
+        } else {
+            savedNode = nodeProxy.saveNode(node);
+        }
+        return savedNode;
+    }
+
+    /**
+     * Create a node
+     * @param node The node to create
+     */
+    public void createNode(Node node) {
+        nodeProxy.createNode(node);
+    }
+
+    /**
+     * Delete all nodes
+     */
+    public void deleteAllNodes() {
+        nodeProxy.deleteAllNodes();
+    }
+
+    /**
+     * Create nodes
+     * @param nodes The list of nodes to create
+     */
+    public void createNodes(List<Node> nodes) {
+        nodeProxy.createNodes(nodes);
+    }
+
+    /**
+     * Get a segment by its id
+     * @param id The id of the segment
+     * @return The segment
+     */
+    public Segment getSegmentById(Long id) {
+        return segmentProxy.getSegmentById(id);
     }
 
     /**
@@ -180,7 +246,61 @@ public class OptimodService {
      * @return The list of segments
      */
     public Iterable<Segment> getAllSegments() {
-        return segmentService.getAllSegments();
+        return segmentProxy.getAllSegments();
+    }
+
+    /**
+     * Delete a segment by its id
+     * @param id The id of the segment
+     */
+    public void deleteSegmentById(Long id) {
+        segmentProxy.deleteSegmentById(id);
+    }
+
+    /**
+     * Save a segment
+     * @param segment The segment to save
+     * @return The saved segment
+     */
+    public Segment saveSegment(Segment segment) {
+        Segment savedSegment;
+        if (segment.getId() == null) {
+            savedSegment = segmentProxy.createSegment(segment);
+        } else {
+            savedSegment = segmentProxy.saveSegment(segment);
+        }
+        return savedSegment;
+    }
+
+    /**
+     * Create a segment
+     * @param segment The segment to create
+     */
+    public void createSegment(Segment segment) {
+        segmentProxy.createSegment(segment);
+    }
+
+    /**
+     * Delete all segments
+     */
+    public void deleteAllSegments() {
+        segmentProxy.deleteAllSegments();
+    }
+
+    /**
+     * Create segments
+     * @param segments The list of segments to create
+     */
+    public void createSegments(List<Segment> segments) {
+        segmentProxy.createSegments(segments);
+    }
+
+    /**
+     * Get a delivery request by its id
+     * @param id The id of the delivery request
+     * @return The delivery request     */
+    public DeliveryRequest getDeliveryRequestById(Long id) {
+        return deliveryRequestProxy.getDeliveryRequestById(id);
     }
 
     /**
@@ -188,30 +308,44 @@ public class OptimodService {
      * @return The list of delivery requests
      */
     public Iterable<DeliveryRequest> getAllDeliveryRequests() {
-        return deliveryRequestService.getAllDeliveryRequests();
+        return deliveryRequestProxy.getAllDeliveryRequests();
     }
 
     /**
-     * Delete all nodes
-     * @return void
+     * Delete a delivery request by its id
+     * @param id The id of the delivery request
      */
-    public void deleteAllNodes() {
-        nodeService.deleteAllNodes();
+    public void deleteDeliveryRequestById(Long id) {
+        deliveryRequestProxy.deleteDeliveryRequestById(id);
     }
 
     /**
-     * Delete all segments
-     * @return void
+     * Save a delivery request
+     * @param deliveryrequest The delivery request to save
+     * @return The saved delivery request
      */
-    public void deleteAllSegments() {
-        segmentService.deleteAllSegments();
+    public DeliveryRequest saveDeliveryRequest(DeliveryRequest deliveryrequest) {
+        DeliveryRequest savedDeliveryRequest;
+        if (deliveryrequest.getId() == null) {
+            savedDeliveryRequest = deliveryRequestProxy.createDeliveryRequest(deliveryrequest);
+        } else {
+            savedDeliveryRequest = deliveryRequestProxy.saveDeliveryRequest(deliveryrequest);
+        }
+        return savedDeliveryRequest;
+    }
+
+    /**
+     * Create a delivery request
+     * @param deliveryrequest The delivery request to create
+     */
+    public void createDeliveryRequest(DeliveryRequest deliveryrequest) {
+        deliveryRequestProxy.createDeliveryRequest(deliveryrequest);
     }
 
     /**
      * Delete all delivery requests
-     * @return void
      */
     public void deleteAllDeliveryRequests() {
-        deliveryRequestService.deleteAllDeliveryRequests();
+        deliveryRequestProxy.deleteAllDeliveryRequests();
     }
 }
