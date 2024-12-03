@@ -5,8 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v2.3.0/maptiler-sdk.umd.js"></script>
+    <link href="https://cdn.maptiler.com/maptiler-sdk-js/v2.3.0/maptiler-sdk.css" rel="stylesheet" />
+    <script src="https://cdn.maptiler.com/leaflet-maptilersdk/v2.0.0/leaflet-maptilersdk.js"></script>
 
     <link rel="stylesheet"
           href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
@@ -14,9 +17,6 @@
           crossorigin="anonymous">
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-    <link href="css/leaflet.icon-material.css" rel="stylesheet">
-    <script src="js/leaflet.icon-material.js"></script>
 
     <title>Optimod</title>
 
@@ -291,6 +291,9 @@
             }
         });
 
+        //Afficher la map
+        document.getElementById('map').style.display = 'block';
+
         // Ajuster la vue pour inclure tous les marqueurs
         if (nodes.length > 0) {
             const bounds = L.latLngBounds(nodes.map(node => [node.latitude, node.longitude]));
@@ -342,15 +345,19 @@
         });
     }
 
+    // Clé d'accès à l'API MapTiler
+    const key = 'zOK6SbqRdZm2NFj4znLb';
     // Initialisation de la carte
     var map = L.map('map').setView([48.8566, 2.3522], 13); // Coordonnées de Paris par défaut
 
-    // Ajouter une couche de carte OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    // Ajouter une couche de carte MapTiler Streets
+    const mtLayer = L.maptilerLayer({
+        apiKey: key,
+        style: L.MaptilerStyle.STREETS,
     }).addTo(map);
 
+    // Mettre le display de la map en none
+    document.getElementById('map').style.display = 'none';
 
     // Récupérer les nodes, segments et deliveryrequests depuis le modèle Thymeleaf
     var nodes = /*[[${nodes}]]*/ [];
