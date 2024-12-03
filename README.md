@@ -1,4 +1,4 @@
-# Optimod
+# Optimod-FrontEnd
 ![Java](https://img.shields.io/badge/-Java-black?style=flat-circle&logo=java)
 ![Spring Boot](https://img.shields.io/badge/-Spring%20Boot-black?style=flat-circle&logo=spring)
 ![Thymeleaf](https://img.shields.io/badge/-Thymeleaf-black?style=flat-circle&logo=thymeleaf)
