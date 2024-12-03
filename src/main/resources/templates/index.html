@@ -215,9 +215,12 @@
             body: formData
         })
             .then(response => {
-
                 if (!response.ok) {
-                    throw new Error('Erreur réseau');
+
+                    return response.json().then(errorData => {
+                        // Lever une erreur avec le message du backend
+                        throw new Error(errorData.details || errorData.error || 'Erreur réseau');
+                    });
                 }
                 return response.json();
             })
@@ -247,11 +250,12 @@
             body: formData
         })
             .then(response => {
-
                 if (!response.ok) {
-                    throw new Error('Erreur réseau');
+                    return response.json().then(errorData => {
+                        // Lever une erreur avec le message du backend
+                        throw new Error(errorData.details || errorData.error || 'Erreur réseau');
+                    });
                 }
-
                 return response.json();
             })
             .then(data => {

@@ -53,7 +53,18 @@ public class OptimodService {
         try {
             File XMLFile = new File(XMLFileName);
             Document document = parseXMLFile(XMLFile);
+
+            // Check if <reseau> is present
+            if (!document.getDocumentElement().getNodeName().equals("reseau")) {
+                throw new Exception("No 'reseau' tag found in the XML file");
+            }
+
             NodeList nodeList = document.getElementsByTagName("noeud");
+
+            // Integrity check
+            if (nodeList.getLength() == 0) {
+                throw new Exception("No node found in the XML file");
+            }
 
             List<Node> tmpListNodes = (List<Node>) nodeProxy.getAllNodes();
 
@@ -64,8 +75,24 @@ public class OptimodService {
                     Element elementNoeud = (Element) noeud;
 
                     String idNoeud = elementNoeud.getAttribute("id");
+
+                    // Integrity check
+                    if (idNoeud.isEmpty()) {
+                        throw new Exception("No id found for the node : " + i);
+                    }
                     String latitudeNoeud = elementNoeud.getAttribute("latitude");
+
+                    // Integrity check
+                    if (latitudeNoeud.isEmpty()) {
+                        throw new Exception("No latitude found for the node : " + i);
+                    }
+
                     String longitudeNoeud = elementNoeud.getAttribute("longitude");
+
+                    // Integrity check
+                    if (longitudeNoeud.isEmpty()) {
+                        throw new Exception("No longitude found for the node : " + i);
+                    }
 
                     Node node = new Node();
                     node.setId(Long.parseLong(idNoeud));
@@ -74,8 +101,6 @@ public class OptimodService {
 
                     //System.out.println("Node: " + node.getId() + ", Latitude: " + node.getLatitude() + ", Longitude: " + node.getLongitude());
                     tmpListNodes.add(node);
-
-
                 }
             }
 
@@ -83,7 +108,7 @@ public class OptimodService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("Error while loading node");
+            throw new Exception(e.getMessage());
         }
     }
 
@@ -96,7 +121,18 @@ public class OptimodService {
         try {
             File XMLFile = new File(XMLFileName);
             Document document = parseXMLFile(XMLFile);
+
+            // Check if <reseau> is present
+            if (!document.getDocumentElement().getNodeName().equals("reseau")) {
+                throw new Exception("No 'reseau' tag found in the XML file");
+            }
+
             NodeList listeTroncons = document.getElementsByTagName("troncon");
+
+            // Integrity check
+            if (listeTroncons.getLength() == 0) {
+                throw new Exception("No segment found in the XML file");
+            }
 
             List<Segment> tmpListSegments = (List<Segment>) segmentProxy.getAllSegments();
 
@@ -107,9 +143,25 @@ public class OptimodService {
                     Element elementTroncon = (Element) troncon;
 
                     String origineTroncon = elementTroncon.getAttribute("origine");
+                    // Integrity check
+                    if (origineTroncon.isEmpty()) {
+                        throw new Exception("No origin found for the segment : " + i);
+                    }
+
                     String destinationTroncon = elementTroncon.getAttribute("destination");
+                    // Integrity check
+                    if (destinationTroncon.isEmpty()) {
+                        throw new Exception("No destination found for the segment : " + i);
+                    }
+
                     String longueurTroncon = elementTroncon.getAttribute("longueur");
+                    // Integrity check
+                    if (longueurTroncon.isEmpty()) {
+                        throw new Exception("No length found for the segment : " + i);
+                    }
+
                     String nomRueTroncon = elementTroncon.getAttribute("nomRue");
+                    // Il n'y a pas de nom de rue pour tous les segments
 
                     Segment segment = new Segment();
                     segment.setIdOrigin(Long.parseLong(origineTroncon));
@@ -126,7 +178,7 @@ public class OptimodService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("Error while loading segment");
+            throw new Exception(e.getMessage());
         }
     }
 
@@ -140,9 +192,29 @@ public class OptimodService {
         try {
             File XMLFile = new File(XMLDeliveryRequest);
             Document document = parseXMLFile(XMLFile);
+
+            // Check if <demandeDeLivraisons> is present
+            if (!document.getDocumentElement().getNodeName().equals("demandeDeLivraisons")) {
+                throw new Exception("No 'demandeDeLivraisons' tag found in the XML file");
+            }
+
             NodeList listeLivraisons = document.getElementsByTagName("livraison");
+            // Integrity check
+            if (listeLivraisons.getLength() == 0) {
+                throw new Exception("No delivery request found in the XML file");
+            }
+
             org.w3c.dom.Node warehouse = document.getElementsByTagName("entrepot").item(0); // Warehouse is the first element
+            // Integrity check
+            if (warehouse == null) {
+                throw new Exception("No warehouse found in the first line of the XML file");
+            }
+
             String warehouseAddress = ((Element) warehouse).getAttribute("adresse");
+            // Integrity check
+            if (warehouseAddress.isEmpty()) {
+                throw new Exception("No warehouse address found in the XML file");
+            }
 
             for (int i = 0; i < listeLivraisons.getLength(); i++) {
                 org.w3c.dom.Node livraison = listeLivraisons.item(i);
@@ -151,7 +223,16 @@ public class OptimodService {
                     Element elementLivraison = (Element) livraison;
 
                     String adresseEnlevement = elementLivraison.getAttribute("adresseEnlevement");
+                    // Integrity check
+                    if (adresseEnlevement.isEmpty()) {
+                        throw new Exception("No pickup address found for the delivery request : " + i);
+                    }
+
                     String adresseLivraison = elementLivraison.getAttribute("adresseLivraison");
+                    // Integrity check
+                    if (adresseLivraison.isEmpty()) {
+                        throw new Exception("No delivery address found for the delivery request : " + i);
+                    }
 
                     DeliveryRequest deliveryRequest = new DeliveryRequest();
                     deliveryRequest.setIdDelivery(Long.parseLong(adresseEnlevement));
@@ -165,7 +246,7 @@ public class OptimodService {
         }
         catch (Exception e) {
             e.printStackTrace();
-            throw new Exception("Error while loading delivery request");
+            throw new Exception(e.getMessage());
         }
     }
 

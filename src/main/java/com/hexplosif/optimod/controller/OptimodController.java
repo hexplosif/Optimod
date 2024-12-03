@@ -239,7 +239,10 @@ public class OptimodController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Erreur lors du chargement de la carte."));
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Erreur lors du chargement de la carte.",
+                    "details", e.getMessage()
+            ));
         }
     }
 
@@ -261,7 +264,10 @@ public class OptimodController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Erreur lors du chargement de la carte."));
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Erreur lors du chargement de la carte.",
+                    "details", e.getMessage()
+            ));
         }
     }
 
