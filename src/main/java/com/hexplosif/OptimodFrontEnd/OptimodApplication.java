@@ -1,6 +1,6 @@
-package com.hexplosif.optimod;
+package com.hexplosif.OptimodFrontEnd;
 
-import com.hexplosif.optimod.controller.OptimodController;
+import com.hexplosif.OptimodFrontEnd.controller.OptimodController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;

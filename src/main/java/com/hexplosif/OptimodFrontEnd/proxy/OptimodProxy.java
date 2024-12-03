@@ -1,12 +1,12 @@
-package com.hexplosif.optimod.proxy;
+package com.hexplosif.OptimodFrontEnd.proxy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hexplosif.optimod.CustomProperties;
-import com.hexplosif.optimod.model.DeliveryRequest;
-import com.hexplosif.optimod.model.Node;
-import com.hexplosif.optimod.model.Segment;
+import com.hexplosif.OptimodFrontEnd.CustomProperties;
+import com.hexplosif.OptimodFrontEnd.model.DeliveryRequest;
+import com.hexplosif.OptimodFrontEnd.model.Node;
+import com.hexplosif.OptimodFrontEnd.model.Segment;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;

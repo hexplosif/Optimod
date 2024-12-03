@@ -1,4 +1,4 @@
-package com.hexplosif.optimod.model;
+package com.hexplosif.OptimodFrontEnd.model;
 
 import lombok.Data;
 

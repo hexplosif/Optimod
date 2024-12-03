@@ -1,13 +1,12 @@
-package com.hexplosif.optimod.controller;
+package com.hexplosif.OptimodFrontEnd.controller;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
-import com.hexplosif.optimod.model.DeliveryRequest;
-import com.hexplosif.optimod.model.Node;
-import com.hexplosif.optimod.model.Segment;
-import com.hexplosif.optimod.proxy.OptimodProxy;
+import com.hexplosif.OptimodFrontEnd.model.DeliveryRequest;
+import com.hexplosif.OptimodFrontEnd.model.Node;
+import com.hexplosif.OptimodFrontEnd.model.Segment;
+import com.hexplosif.OptimodFrontEnd.proxy.OptimodProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

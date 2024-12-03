@@ -1,4 +1,4 @@
-package com.hexplosif.optimod;
+package com.hexplosif.OptimodFrontEnd;
 
 public class OptimodControllerTest {
 
