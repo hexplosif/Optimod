@@ -505,6 +505,7 @@ public class OptimodProxy {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.delete(deleteDeliveryRequestByIdUrl);
 
+        System.out.println("Delete deliveryrequest by id called");
         log.debug("Delete deliveryrequest by id called");
     }
 

@@ -11,10 +11,7 @@
     <link href="https://cdn.maptiler.com/maptiler-sdk-js/v2.3.0/maptiler-sdk.css" rel="stylesheet" />
     <script src="https://cdn.maptiler.com/leaflet-maptilersdk/v2.0.0/leaflet-maptilersdk.js"></script>
 
-    <link rel="stylesheet"
-          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-          crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
@@ -83,25 +80,24 @@
     <h2>Load Map with a XML file</h2>
     <form id="loadMapForm" enctype="multipart/form-data">
         <div class="form-group row">
-            <label for="mapFile" class="col-sm-2 col-form-label">Fichier XML</label>
             <div class="col-sm-10">
-                <input type="file" class="form-control-file" id="mapFile" name="file" accept=".xml" onchange="uploadMap('/loadMap', 'loadMapForm')">
+                <label for="mapFile" class="btn btn-primary">Upload a map</label>
+                <input type="file" class="btn btn-primary form-control-file" id="mapFile" name="file" accept=".xml" onchange="uploadMap('/loadMap', 'loadMapForm')" style="display: none">
+                <div id="mapMessage" class="mt-3"></div>
             </div>
         </div>
     </form>
 
-    <h2>Load Deliveries Requests with a XML file</h2>
+    <h2>Load Deliveries Requests with XML files</h2>
     <form id="loadDeliveryRequestForm" enctype="multipart/form-data">
         <div class="form-group row">
-            <label for="deliveryFile" class="col-sm-2 col-form-label">Fichier XML</label>
             <div class="col-sm-10">
-                <input type="file" class="form-control-file" id="deliveryFile" name="file">
+                <label for="deliveryFiles" class="btn btn-primary">Add delivery requests</label>
+                <input type="file" class="btn btn-primary form-control-file" id="deliveryFiles" name="files" accept=".xml" onchange="uploadMultipleDeliveries('/loadDeliveryRequest', 'loadDeliveryRequestForm')" style="display: none" multiple>
+                <div id="deliveryMessage" class="mt-3"></div>
             </div>
         </div>
-        <button type="button" class="btn btn-primary" onclick="uploadDelivery('/loadDeliveryRequest', 'loadDeliveryRequestForm')">Charger les livraisons</button>
     </form>
-
-    <div id="message" class="mt-3"></div>
 
     <!--
     <h2 class="h2">Liste des nodes</h2>
@@ -176,7 +172,7 @@
             <th>Warehouse</th>
         </tr>
         </thead>
-        <tbody>
+        <tbody id="deliveries">
         <tr th:if="${deliveryrequests.empty}">
             <td colspan="4">Aucune livraison en base de données</td>
         </tr>
@@ -205,6 +201,7 @@
         document.getElementById('loadingOverlay').style.display = 'none';
     }
 
+    // Fonction pour charger la carte
     function uploadMap(url, formId) {
         const formData = new FormData(document.getElementById(formId));
 
@@ -232,22 +229,23 @@
             })
             .then(data => {
                 // Afficher un message de succès
-                document.getElementById('message').innerHTML = `<div class="alert alert-success">Fichier chargé avec succès !</div>`;
+                document.getElementById('mapMessage').innerHTML = `<div class="alert alert-success">Fichier chargé avec succès !</div>`;
 
                 // Recharger la carte avec les nouvelles données
                 updateMap(data.nodes, data.segments);
             })
             .catch(error => {
-                document.getElementById('message').innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+                document.getElementById('mapMessage').innerHTML = `<div class="alert alert-danger">Error while loading the map : ${error.message}</div>`;
             })
             .finally(() => {
                 hideLoading();
             });
     }
 
-    // Fonction pour charger les livraisons
+    // Fonction pour charger une livraison
     function uploadDelivery(url, formId) {
-        const formData = new FormData(document.getElementById(formId));
+        const formData = new FormData();
+        formData.append('file', formId);
 
         showLoading();
 
@@ -266,17 +264,33 @@
             })
             .then(data => {
                 // Afficher un message de succès
-                document.getElementById('message').innerHTML = `<div class="alert alert-success">Fichier chargé avec succès !</div>`;
+                document.getElementById('deliveryMessage').innerHTML = `<div class="alert alert-success">Fichier chargé avec succès !</div>`;
 
                 // Recharger la carte avec les nouvelles données
                 updateDeliveries(data.deliveryrequests);
             })
             .catch(error => {
-                document.getElementById('message').innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+                document.getElementById('deliveryMessage').innerHTML = `<div class="alert alert-danger">Error while loading the deliveries : ${error.message}</div>`;
             })
             .finally(() => {
                 hideLoading();
             });
+    }
+
+    // Fonction pour charger les livraisons
+    function uploadMultipleDeliveries(url, formId) {
+        const form = document.getElementById(formId);
+        const filesInput = form.querySelector('#deliveryFiles');
+        const files = filesInput.files;
+
+        if (files.length === 0) {
+            alert('Veuillez sélectionner au moins un fichier.');
+            return;
+        }
+
+        for (let i = 0; i < files.length; i++) {
+            uploadDelivery(url, files[i]);
+        }
     }
 
     // Fonction pour recharger la carte
@@ -317,13 +331,6 @@
             }
         })
 
-        var nodes = /*[[${nodes}]]*/ [];
-
-        if (nodes.length == 0) {
-            document.getElementById('message').innerHTML = `<div class="alert alert-danger">Veuillez charger une carte avant de charger les livraisons</div>`;
-            return;
-        }
-
         // Ajouter un marqueur pour la warehouse en vert
         const warehouse = deliveryrequests.find(delivery => delivery.idWarehouse !== null);
 
@@ -331,7 +338,7 @@
             const warehouseNode = nodes.find(node => node.id === warehouse.idWarehouse);
 
             if (!warehouseNode) {
-                document.getElementById('message').innerHTML = `<div class="alert alert-danger">Veuillez charger une carte assez grande avant de charger les livraisons</div>`;
+                document.getElementById('deliveryMessage').innerHTML = `<div class="alert alert-danger">Veuillez charger une carte assez grande avant de charger les livraisons</div>`;
                 return;
             }
 
@@ -339,6 +346,9 @@
                 .addTo(map)
                 .bindPopup("<strong>Warehouse</strong>");
         }
+
+        // On vide le tableau des livraisons
+        document.getElementById('deliveries').innerHTML = '';
 
         // Ajouter les nouveaux marqueurs
         deliveryrequests.forEach(delivery => {
@@ -355,8 +365,23 @@
                 L.marker([deliveryNode.latitude, deliveryNode.longitude], { icon: L.icon({ iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] }) })
                     .addTo(map)
                     .bindPopup("<strong>Delivery</strong>");
+
+                // Mettre à jour le tableau
+                document.getElementById('deliveries').innerHTML += `
+                    <tr>
+                        <td>${delivery.id}</td>
+                        <td>${delivery.idPickup}</td>
+                        <td>${delivery.idDelivery}</td>
+                        <td>${delivery.idWarehouse}</td>
+                        <td>
+                            <a href="/updateDeliveryRequest/${delivery.id}"><button class="btn btn-info">Modifier</button></a>
+                            <a href="/deleteDeliveryRequest/${delivery.id}"><button class="btn btn-danger">Supprimer</button></a>
+                        </td>
+                    </tr>
+                `;
+
             } else {
-                document.getElementById('message').innerHTML = `<div class="alert alert-danger">Veuillez charger une carte assez grande avant de charger les livraisons</div>`;
+                document.getElementById('deliveryMessage').innerHTML = `<div class="alert alert-danger">Veuillez charger une carte assez grande avant de charger les livraisons</div>`;
                 return;
             }
         });
@@ -373,13 +398,23 @@
         style: L.MaptilerStyle.STREETS,
     }).addTo(map);
 
-    // Mettre le display de la map en none
-    document.getElementById('map').style.display = 'none';
 
     // Récupérer les nodes, segments et deliveryrequests depuis le modèle Thymeleaf
     var nodes = /*[[${nodes}]]*/ [];
     var segments = /*[[${segments}]]*/ [];
     var deliveryrequests = /*[[${deliveryrequests}]]*/ [];
+
+    // Ne pas afficher la carte si aucun node n'est chargé
+    if (nodes.length === 0 || segments.length === 0) {
+        document.getElementById('map').style.display = 'none';
+    } else {
+        updateMap(nodes, segments, deliveryrequests);
+
+        if (deliveryrequests.length > 0) {
+            updateDeliveries(deliveryrequests);
+        }
+    }
+
 
     /*
     // Ajouter des marqueurs pour chaque node
