@@ -19,7 +19,7 @@ Ce projet a pour but de mettre en place un système de gestion de trafic pour la
 
 Pour lancer le projet il y a besoin de ce projet-ci ainsi que l'API :
 
-[Optimod-API](https://github.com/hexplosif/Optimod-API.git) 
+[Optimod-BackEnd](https://github.com/hexplosif/Optimod-BackEnd.git) 
 
 Puis il faut lancer les deux projets en même temps.
 
