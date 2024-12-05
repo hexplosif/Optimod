@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hexplosif.OptimodFrontEnd.CustomProperties;
+import com.hexplosif.OptimodFrontEnd.model.Courier;
 import com.hexplosif.OptimodFrontEnd.model.DeliveryRequest;
 import com.hexplosif.OptimodFrontEnd.model.Node;
 import com.hexplosif.OptimodFrontEnd.model.Segment;
@@ -429,12 +430,12 @@ public class OptimodProxy {
     }
 
     /**
-     * Get all deliveryrequests from the API
-     * @return An iterable of deliveryrequests
+     * Get all delivery_requests from the API
+     * @return An iterable of delivery_requests
      */
     public Iterable<DeliveryRequest> getAllDeliveryRequests() {
         String apiUrl = customProperties.getApiUrl();
-        String getAllDeliveryRequestsUrl = apiUrl + "/deliveryrequests";
+        String getAllDeliveryRequestsUrl = apiUrl + "/delivery_requests";
 
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<Iterable<DeliveryRequest>> response = restTemplate.exchange(
@@ -445,19 +446,19 @@ public class OptimodProxy {
                 }
         );
 
-        log.debug("Get all deliveryrequests called with response: " + response.toString());
+        log.debug("Get all delivery_requests called with response: " + response.toString());
 
         return response.getBody();
     }
 
     /**
-     * Get a deliveryrequest by its id
-     * @param id The id of the deliveryrequest
-     * @return The deliveryrequest
+     * Get a delivery_request by its id
+     * @param id The id of the delivery_request
+     * @return The delivery_request
      */
     public DeliveryRequest getDeliveryRequestById(Long id) {
         String apiUrl = customProperties.getApiUrl();
-        String getDeliveryRequestByIdUrl = apiUrl + "/deliveryrequest/" + id;
+        String getDeliveryRequestByIdUrl = apiUrl + "/delivery_request/" + id;
 
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<DeliveryRequest> response = restTemplate.exchange(
@@ -467,59 +468,59 @@ public class OptimodProxy {
                 DeliveryRequest.class
         );
 
-        log.debug("Get deliveryrequest by id called with response: " + response.toString());
+        log.debug("Get delivery_request by id called with response: " + response.toString());
 
         return response.getBody();
     }
 
     /**
-     * Create a deliveryrequest in the API
-     * @param deliveryrequest The deliveryrequest to create
-     * @return The created deliveryrequest
+     * Create a delivery_request in the API
+     * @param delivery_request The delivery_request to create
+     * @return The created delivery_request
      */
-    public DeliveryRequest createDeliveryRequest(DeliveryRequest deliveryrequest) {
+    public DeliveryRequest createDeliveryRequest(DeliveryRequest delivery_request) {
         String apiUrl = customProperties.getApiUrl();
-        String createDeliveryRequestUrl = apiUrl + "/deliveryrequest";
+        String createDeliveryRequestUrl = apiUrl + "/delivery_request";
 
         RestTemplate restTemplate = new RestTemplate();
-        HttpEntity<DeliveryRequest> request = new HttpEntity<DeliveryRequest>(deliveryrequest);
+        HttpEntity<DeliveryRequest> request = new HttpEntity<DeliveryRequest>(delivery_request);
         ResponseEntity<DeliveryRequest> response = restTemplate.postForEntity(
                 createDeliveryRequestUrl,
                 request,
                 DeliveryRequest.class
         );
 
-        log.debug("Create deliveryrequest called with response: " + response.toString());
+        log.debug("Create delivery_request called with response: " + response.toString());
 
         return response.getBody();
     }
 
     /**
-     * Delete a deliveryrequest by its id
-     * @param id The id of the deliveryrequest
+     * Delete a delivery_request by its id
+     * @param id The id of the delivery_request
      */
     public void deleteDeliveryRequestById(Long id) {
         String apiUrl = customProperties.getApiUrl();
-        String deleteDeliveryRequestByIdUrl = apiUrl + "/deliveryrequest/" + id;
+        String deleteDeliveryRequestByIdUrl = apiUrl + "/delivery_request/" + id;
 
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.delete(deleteDeliveryRequestByIdUrl);
 
-        System.out.println("Delete deliveryrequest by id called");
-        log.debug("Delete deliveryrequest by id called");
+        System.out.println("Delete delivery_request by id called");
+        log.debug("Delete delivery_request by id called");
     }
 
     /**
-     * Save a deliveryrequest in the API
-     * @param deliveryrequest The deliveryrequest to save
-     * @return The saved deliveryrequest
+     * Save a delivery_request in the API
+     * @param delivery_request The delivery_request to save
+     * @return The saved delivery_request
      */
-    public DeliveryRequest saveDeliveryRequest(DeliveryRequest deliveryrequest) {
+    public DeliveryRequest saveDeliveryRequest(DeliveryRequest delivery_request) {
         String apiUrl = customProperties.getApiUrl();
-        String saveDeliveryRequestUrl = apiUrl + "/deliveryrequest/" + deliveryrequest.getId();
+        String saveDeliveryRequestUrl = apiUrl + "/delivery_request/" + delivery_request.getId();
 
         RestTemplate restTemplate = new RestTemplate();
-        HttpEntity<DeliveryRequest> request = new HttpEntity<DeliveryRequest>(deliveryrequest);
+        HttpEntity<DeliveryRequest> request = new HttpEntity<DeliveryRequest>(delivery_request);
         ResponseEntity<DeliveryRequest> response = restTemplate.exchange(
                 saveDeliveryRequestUrl,
                 HttpMethod.PUT,
@@ -527,18 +528,132 @@ public class OptimodProxy {
                 DeliveryRequest.class
         );
 
-        log.debug("Save deliveryrequest called with response: " + response.toString());
+        log.debug("Save delivery_request called with response: " + response.toString());
 
         return response.getBody();
     }
 
     public void deleteAllDeliveryRequests() {
         String apiUrl = customProperties.getApiUrl();
-        String deleteAllDeliveryRequestsUrl = apiUrl + "/deliveryrequests";
+        String deleteAllDeliveryRequestsUrl = apiUrl + "/delivery_requests";
 
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.delete(deleteAllDeliveryRequestsUrl);
 
-        log.debug("Delete all deliveryrequests called");
+        log.debug("Delete all delivery_requests called");
+    }
+
+    /**
+     * Get all courier from the API
+     * @return An iterable of courier
+     */
+    public Iterable<Courier> getAllCouriers() {
+        String apiUrl = customProperties.getApiUrl();
+        String getAllCouriersUrl = apiUrl + "/couriers";
+
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<Iterable<Courier>> response = restTemplate.exchange(
+                getAllCouriersUrl,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<Iterable<Courier>>() {
+                }
+        );
+
+        log.debug("Get all delivery_requests called with response: " + response.toString());
+
+        return response.getBody();
+    }
+
+    /**
+     * Get a courier by its id
+     * @param id The id of the courier
+     * @return The courier
+     */
+    public Courier getCourierById(Long id) {
+        String apiUrl = customProperties.getApiUrl();
+        String getCourierByIdUrl = apiUrl + "/courier/" + id;
+
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<Courier> response = restTemplate.exchange(
+                getCourierByIdUrl,
+                HttpMethod.GET,
+                null,
+                Courier.class
+        );
+
+        log.debug("Get courier by id called with response: " + response.toString());
+
+        return response.getBody();
+    }
+
+    /**
+     * Create a courier in the API
+     * @param courier The courier to create
+     * @return The created courier
+     */
+    public Courier createCourier(Courier courier) {
+        String apiUrl = customProperties.getApiUrl();
+        String createCourierUrl = apiUrl + "/courier";
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<Courier> request = new HttpEntity<Courier>(courier);
+        ResponseEntity<Courier> response = restTemplate.postForEntity(
+                createCourierUrl,
+                request,
+                Courier.class
+        );
+
+        log.debug("Create courier called with response: " + response.toString());
+
+        return response.getBody();
+    }
+
+    /**
+     * Delete a courier by its id
+     * @param id The id of the courier
+     */
+    public void deleteCourierById(Long id) {
+        String apiUrl = customProperties.getApiUrl();
+        String deleteCourierByIdUrl = apiUrl + "/courier/" + id;
+
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.delete(deleteCourierByIdUrl);
+
+        System.out.println("Delete courier by id called");
+        log.debug("Delete courier by id called");
+    }
+
+    /**
+     * Save a courier in the API
+     * @param courier The courier to save
+     * @return The saved courier
+     */
+    public Courier saveCourier(Courier courier) {
+        String apiUrl = customProperties.getApiUrl();
+        String saveCourierUrl = apiUrl + "/courier/" + courier.getId();
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<Courier> request = new HttpEntity<Courier>(courier);
+        ResponseEntity<Courier> response = restTemplate.exchange(
+                saveCourierUrl,
+                HttpMethod.PUT,
+                request,
+                Courier.class
+        );
+
+        log.debug("Save courier called with response: " + response.toString());
+
+        return response.getBody();
+    }
+
+    public void deleteAllCouriers() {
+        String apiUrl = customProperties.getApiUrl();
+        String deleteAllCouriersUrl = apiUrl + "/couriers";
+
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.delete(deleteAllCouriersUrl);
+
+        log.debug("Delete all couriers called");
     }
 }

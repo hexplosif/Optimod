@@ -1,8 +1,8 @@
 package com.hexplosif.OptimodFrontEnd.controller;
 
-import java.io.IOException;
 import java.util.Map;
 
+import com.hexplosif.OptimodFrontEnd.model.Courier;
 import com.hexplosif.OptimodFrontEnd.model.DeliveryRequest;
 import com.hexplosif.OptimodFrontEnd.model.Node;
 import com.hexplosif.OptimodFrontEnd.model.Segment;
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 public class OptimodController {
@@ -26,9 +27,11 @@ public class OptimodController {
         Iterable<Node> listNode = optimodProxy.getAllNodes();
         Iterable<Segment> listSegment = optimodProxy.getAllSegments();
         Iterable<DeliveryRequest> listDeliveryRequest = optimodProxy.getAllDeliveryRequests();
+        Iterable<Courier> listCourier = optimodProxy.getAllCouriers();
         model.addAttribute("nodes", listNode);
         model.addAttribute("segments", listSegment);
-        model.addAttribute("deliveryrequests", listDeliveryRequest);
+        model.addAttribute("deliveryRequests", listDeliveryRequest);
+        model.addAttribute("couriers", listCourier);
         return "index";
     }
 
@@ -61,6 +64,8 @@ public class OptimodController {
 
             Map<String, Object> response = optimodProxy.loadDeliveryRequest(file);
 
+            response.put("nodes", optimodProxy.getAllNodes());
+
             if (response.containsKey("error")) {
                 // Propager l'erreur du service en tant que réponse HTTP 500
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -78,22 +83,14 @@ public class OptimodController {
     }
 
     @GetMapping("/deleteDeliveryRequest/{id}")
-    public String deleteDeliveryRequestById(@PathVariable("id") Long id) {
-        try {
-
-            optimodProxy.deleteDeliveryRequestById(id);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "redirect:/error";
-        }
-
-        return "redirect:/";
+    public ModelAndView deleteDeliveryRequest(@PathVariable("id") final Long id) {
+        optimodProxy.deleteDeliveryRequestById(id);
+        return new ModelAndView("redirect:/");
     }
 
-    private String saveUploadedFile(MultipartFile file) throws IOException {
-        String tempFileName = System.getProperty("java.io.tmpdir") + file.getOriginalFilename();
-        file.transferTo(new java.io.File(tempFileName));
-        return tempFileName;
+    @GetMapping("/deleteAllDeliveryRequests")
+    public ModelAndView deleteAllDeliveryRequests() {
+        optimodProxy.deleteAllDeliveryRequests();
+        return new ModelAndView("redirect:/");
     }
 }

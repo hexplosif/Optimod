@@ -98,6 +98,7 @@
             </div>
         </div>
     </form>
+    <a th:href="@{/deleteAllDeliveryRequests}"><button class="btn btn-danger">Supprimer toutes les livraisons</button></a>
 
     <!--
     <h2 class="h2">Liste des nodes</h2>
@@ -162,6 +163,46 @@
 
     -->
 
+    <!-- Modification du nombre de livreurs -->
+    <h2 class="h2">Modifier le nombre de livreurs</h2>
+    <form action="/updateCouriers" method="post">
+        <div class="form-group row">
+            <label for="couriers" class="col-sm-2 col-form-label">Nombre de livreurs</label>
+            <div class="col-sm-10">
+                <input type="number" class="form-control" id="couriers" name="couriers" value="1" min="1" required>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Modifier</button>
+    </form>
+
+    <!-- Liste des livreurs -->
+    <h2 class="h2">Liste des livreurs</h2>
+    <table class="table table-striped table-sm">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Nom</th>
+            <th>Icon</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${couriers.empty}">
+            <td colspan="5">Aucun livreur en base de données</td>
+        </tr>
+        <tr th:each="courier: ${couriers}">
+            <td><span th:text="${courier.id}"> Id </span></td>
+            <td><span th:text="${courier.name}"> Name </span></td>
+            <td><img src="https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png" alt="Icon" style="width: 25px; height: 41px;"></td>
+            <td>
+                <a th:href="@{/updateCourier/{id}(id=${courier.id})}"><button class="btn btn-info">Modifier</button></a>
+                <a th:href="@{/deleteCourier/{id}(id=${courier.id})}"><button class="btn btn-danger">Supprimer</button></a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Liste des livraisons -->
     <h2 class="h2">Liste des livraisons</h2>
     <table class="table table-striped table-sm">
         <thead>
@@ -170,13 +211,14 @@
             <th>Pickup</th>
             <th>Delivery</th>
             <th>Warehouse</th>
+            <th>Actions</th>
         </tr>
         </thead>
         <tbody id="deliveries">
-        <tr th:if="${deliveryrequests.empty}">
+        <tr th:if="${deliveryRequests.empty}">
             <td colspan="4">Aucune livraison en base de données</td>
         </tr>
-        <tr th:each="delivery: ${deliveryrequests}">
+        <tr th:each="delivery: ${deliveryRequests}">
             <td><span th:text="${delivery.id}"> Id </span></td>
             <td><span th:text="${delivery.idPickup}"> Pickup </span></td>
             <td><span th:text="${delivery.idDelivery}"> Delivery </span></td>
@@ -188,119 +230,60 @@
         </tr>
         </tbody>
     </table>
+
+    <!-- Lier les livreurs aux livraisons -->
+    <h2 class="h2">Lier les livreurs aux livraisons</h2>
+    <form action="/linkCouriersToDeliveries" method="post">
+        <div class="form-group row">
+            <label for="courierId" class="col-sm-2 col-form-label">Livreur</label>
+            <div class="col-sm-10">
+                <select class="form-select" id="courierId" name="courierId" required>
+                    <option value="">Sélectionner un livreur</option>
+                    <option th:each="courier: ${couriers}" th:value="${courier.id}" th:text="${courier.name}"></option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="deliveryId" class="col-sm-2 col-form-label">Livraison</label>
+            <div class="col-sm-10">
+                <select class="form-select" id="deliveryId" name="deliveryId" required>
+                    <option value="">Sélectionner une livraison</option>
+                    <option th:each="delivery: ${deliveryRequests}" th:value="${delivery.id}" th:text="${delivery.id}"></option>
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Lier</button>
+    </form>
 </div>
 
 
 <script th:inline="javascript">
 
-    function showLoading() {
-        document.getElementById('loadingOverlay').style.display = 'flex';
+    // Fonction pour afficher/masquer le loading
+    function toggleLoading(isVisible) {
+        document.getElementById('loadingOverlay').style.display = isVisible ? 'flex' : 'none';
     }
 
-    function hideLoading() {
-        document.getElementById('loadingOverlay').style.display = 'none';
-    }
-
-    // Fonction pour charger la carte
-    function uploadMap(url, formId) {
-        const formData = new FormData(document.getElementById(formId));
-
-        //Afficher la map
-        document.getElementById('map').style.display = 'block';
-
-        showLoading();
-
-        fetch(url, {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => {
-                if (!response.ok) {
-
-                    //Cacher la map
-                    document.getElementById('map').style.display = 'none';
-
-                    return response.json().then(errorData => {
-                        // Lever une erreur avec le message du backend
-                        throw new Error(errorData.details || errorData.error || 'Erreur réseau');
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Afficher un message de succès
-                document.getElementById('mapMessage').innerHTML = `<div class="alert alert-success">Fichier chargé avec succès !</div>`;
-
-                // Recharger la carte avec les nouvelles données
-                updateMap(data.nodes, data.segments);
-            })
-            .catch(error => {
-                document.getElementById('mapMessage').innerHTML = `<div class="alert alert-danger">Error while loading the map : ${error.message}</div>`;
-            })
-            .finally(() => {
-                hideLoading();
-            });
-    }
-
-    // Fonction pour charger une livraison
-    function uploadDelivery(url, formId) {
-        const formData = new FormData();
-        formData.append('file', formId);
-
-        showLoading();
-
-        fetch(url, {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        // Lever une erreur avec le message du backend
-                        throw new Error(errorData.details || errorData.error || 'Erreur réseau');
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Afficher un message de succès
-                document.getElementById('deliveryMessage').innerHTML = `<div class="alert alert-success">Fichier chargé avec succès !</div>`;
-
-                // Recharger la carte avec les nouvelles données
-                updateDeliveries(data.deliveryrequests);
-            })
-            .catch(error => {
-                document.getElementById('deliveryMessage').innerHTML = `<div class="alert alert-danger">Error while loading the deliveries : ${error.message}</div>`;
-            })
-            .finally(() => {
-                hideLoading();
-            });
-    }
-
-    // Fonction pour charger les livraisons
-    function uploadMultipleDeliveries(url, formId) {
-        const form = document.getElementById(formId);
-        const filesInput = form.querySelector('#deliveryFiles');
-        const files = filesInput.files;
-
-        if (files.length === 0) {
-            alert('Veuillez sélectionner au moins un fichier.');
-            return;
-        }
-
-        for (let i = 0; i < files.length; i++) {
-            uploadDelivery(url, files[i]);
+    // Fonction pour afficher la carte et vérifier les données
+    function toggleMapVisibility(nodes, segments) {
+        const mapElement = document.getElementById('map');
+        if (nodes.length === 0 || segments.length === 0) {
+            mapElement.style.display = 'none';
+        } else {
+            mapElement.style.display = 'block';
         }
     }
 
-    // Fonction pour recharger la carte
-    function updateMap(nodes, segments, deliveryrequests) {
-        // Supprimer toutes les couches actuelles
-        map.eachLayer(layer => {
-            if (layer instanceof L.Polyline) {
-                map.removeLayer(layer);
-            }
-        });
+    // Fonction pour afficher un message dans un élément spécifié
+    function displayMessage(elementId, message, isSuccess = true) {
+        const messageElement = document.getElementById(elementId);
+        messageElement.innerHTML = `<div class="alert alert-${isSuccess ? 'success' : 'danger'}">${message}</div>`;
+    }
+
+    // Fonction pour mettre à jour la carte avec les nouveaux segments
+    function updateMap(nodes, segments) {
+        // Supprimer les anciennes couches de segments
+        map.eachLayer(layer => layer instanceof L.Polyline && map.removeLayer(layer));
 
         // Ajouter les nouveaux segments
         segments.forEach(segment => {
@@ -315,75 +298,162 @@
             }
         });
 
-        // Ajuster la vue pour inclure tous les marqueurs
+        // Ajuster la vue de la carte pour inclure tous les marqueurs
         if (nodes.length > 0) {
             const bounds = L.latLngBounds(nodes.map(node => [node.latitude, node.longitude]));
             map.fitBounds(bounds);
         }
+
+        // Afficher la carte si les données sont chargées
+        toggleMapVisibility(nodes, segments);
     }
 
-    // Fonction pour recharger uniquement les livraisons (marqueurs)
-    function updateDeliveries(deliveryrequests) {
-        // Supprimer tous les marqueurs actuels
-        map.eachLayer(layer => {
-            if (layer instanceof L.Marker) {
-                map.removeLayer(layer);
-            }
-        })
+    // Fonction pour mettre à jour les livraisons sur la carte
+    function updateDeliveries(nodes, deliveryRequests) {
+        // Supprimer les anciens marqueurs
+        map.eachLayer(layer => layer instanceof L.Marker && map.removeLayer(layer));
 
-        // Ajouter un marqueur pour la warehouse en vert
-        const warehouse = deliveryrequests.find(delivery => delivery.idWarehouse !== null);
-
+        // Ajouter le marqueur du warehouse
+        const warehouse = deliveryRequests.find(delivery => delivery.idWarehouse !== null);
         if (warehouse) {
             const warehouseNode = nodes.find(node => node.id === warehouse.idWarehouse);
-
-            if (!warehouseNode) {
-                document.getElementById('deliveryMessage').innerHTML = `<div class="alert alert-danger">Veuillez charger une carte assez grande avant de charger les livraisons</div>`;
+            if (warehouseNode) {
+                L.marker([warehouseNode.latitude, warehouseNode.longitude], {
+                    icon: L.icon({
+                        iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34]
+                    })
+                }).addTo(map).bindPopup("<strong>Warehouse</strong>");
+            } else {
+                displayMessage('deliveryMessage', 'Warehouse node not found. Ensure map is loaded first or is large enough to include all nodes.', false);
                 return;
             }
-
-            L.marker([warehouseNode.latitude, warehouseNode.longitude], { icon: L.icon({ iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] }) })
-                .addTo(map)
-                .bindPopup("<strong>Warehouse</strong>");
         }
 
-        // On vide le tableau des livraisons
+        // Vider la table des livraisons
         document.getElementById('deliveries').innerHTML = '';
 
-        // Ajouter les nouveaux marqueurs
-        deliveryrequests.forEach(delivery => {
-            const pickup = nodes.find(node => node.id === delivery.idPickup);
+        // Ajouter les marqueurs de pickup et delivery
+        deliveryRequests.forEach(delivery => {
+            const pickupNode = nodes.find(node => node.id === delivery.idPickup);
             const deliveryNode = nodes.find(node => node.id === delivery.idDelivery);
 
-            if (pickup && deliveryNode) {
-                // Ajouter un marqueur pour le pickup en bleu
-                L.marker([pickup.latitude, pickup.longitude], { icon: L.icon({ iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] }) })
-                    .addTo(map)
-                    .bindPopup("<strong>Pickup</strong>");
-
-                // Ajouter un marqueur pour le delivery en orange
-                L.marker([deliveryNode.latitude, deliveryNode.longitude], { icon: L.icon({ iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] }) })
-                    .addTo(map)
-                    .bindPopup("<strong>Delivery</strong>");
-
-                // Mettre à jour le tableau
-                document.getElementById('deliveries').innerHTML += `
-                    <tr>
-                        <td>${delivery.id}</td>
-                        <td>${delivery.idPickup}</td>
-                        <td>${delivery.idDelivery}</td>
-                        <td>${delivery.idWarehouse}</td>
-                        <td>
-                            <a href="/updateDeliveryRequest/${delivery.id}"><button class="btn btn-info">Modifier</button></a>
-                            <a href="/deleteDeliveryRequest/${delivery.id}"><button class="btn btn-danger">Supprimer</button></a>
-                        </td>
-                    </tr>
-                `;
-
+            if (pickupNode && deliveryNode) {
+                addDeliveryMarker(pickupNode, 'blue', 'Pickup');
+                addDeliveryMarker(deliveryNode, 'orange', 'Delivery');
             } else {
-                document.getElementById('deliveryMessage').innerHTML = `<div class="alert alert-danger">Veuillez charger une carte assez grande avant de charger les livraisons</div>`;
-                return;
+                displayMessage('deliveryMessage', 'One or more nodes not found for this delivery. Ensure map is loaded first or is large enough to include all nodes.', false);
             }
+
+            // Mettre à jour la table des livraisons
+            updateDeliveryTable(delivery);
+        });
+    }
+
+    // Fonction pour ajouter un marqueur de livraison
+    function addDeliveryMarker(node, color, type) {
+        L.marker([node.latitude, node.longitude], {
+            icon: L.icon({
+                iconUrl: `https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34]
+            })
+        }).addTo(map).bindPopup(`<strong>${type}</strong>`);
+    }
+
+    // Fonction pour mettre à jour la table des livraisons
+    function updateDeliveryTable(delivery) {
+        const deliveriesTable = document.getElementById('deliveries');
+        deliveriesTable.innerHTML += `
+        <tr>
+            <td>${delivery.id}</td>
+            <td>${delivery.idPickup}</td>
+            <td>${delivery.idDelivery}</td>
+            <td>${delivery.idWarehouse}</td>
+            <td>
+                <a href="/updateDeliveryRequest/${delivery.id}"><button class="btn btn-info">Modifier</button></a>
+                <a href="/deleteDeliveryRequest/${delivery.id}"><button class="btn btn-danger">Supprimer</button></a>
+            </td>
+        </tr>
+    `;
+    }
+
+    // Fonction générique pour uploader une carte
+    function uploadMap(url, formId) {
+        const formData = new FormData(document.getElementById(formId));
+        toggleLoading(true);
+
+        fetch(url, {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => {
+                if (!response.ok){
+                    return response.json().then(error => {
+                        throw new Error(error.details || 'Erreur réseau');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                displayMessage('mapMessage', 'Fichier chargé avec succès !', true);
+                updateMap(data.nodes, data.segments);
+            })
+            .catch(error => {
+                displayMessage('mapMessage', `Error while loading the map: ${error}`, false);
+            })
+            .finally(() => {
+                toggleLoading(false);
+            });
+    }
+
+    // Fonction générique pour uploader une livraison
+    function uploadDelivery(url, file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        toggleLoading(true);
+
+        fetch(url, {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => {
+                if (!response.ok){
+                    return response.json().then(error => {
+                        throw new Error(error.details || 'Erreur réseau');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                displayMessage('deliveryMessage', 'Fichier chargé avec succès !', true);
+                updateDeliveries(data.nodes, data.deliveryRequests);
+            })
+            .catch(error => {
+                displayMessage('deliveryMessage', `Error while loading the deliveries: ${error}`, false);
+            })
+            .finally(() => {
+                toggleLoading(false);
+            });
+    }
+
+    // Fonction pour uploader plusieurs livraisons
+    function uploadMultipleDeliveries(url, formId) {
+        const form = document.getElementById(formId);
+        const filesInput = form.querySelector('#deliveryFiles');
+        const files = filesInput.files;
+
+        if (files.length === 0) {
+            alert('Veuillez sélectionner au moins un fichier.');
+            return;
+        }
+
+        Array.from(files).forEach(file => {
+            uploadDelivery(url, file);
         });
     }
 
@@ -392,26 +462,25 @@
     // Initialisation de la carte
     var map = L.map('map').setView([48.8566, 2.3522], 13); // Coordonnées de Paris par défaut
 
-    // Ajouter une couche de carte MapTiler Streets
+    // Ajouter la couche de carte MapTiler
     const mtLayer = L.maptilerLayer({
         apiKey: key,
         style: L.MaptilerStyle.STREETS,
     }).addTo(map);
 
-
-    // Récupérer les nodes, segments et deliveryrequests depuis le modèle Thymeleaf
+    // Récupérer les données du modèle Thymeleaf
     var nodes = /*[[${nodes}]]*/ [];
     var segments = /*[[${segments}]]*/ [];
-    var deliveryrequests = /*[[${deliveryrequests}]]*/ [];
+    var deliveryRequests = /*[[${deliveryRequests}]]*/ [];
 
     // Ne pas afficher la carte si aucun node n'est chargé
-    if (nodes.length === 0 || segments.length === 0) {
-        document.getElementById('map').style.display = 'none';
-    } else {
-        updateMap(nodes, segments, deliveryrequests);
+    toggleMapVisibility(nodes, segments);
 
-        if (deliveryrequests.length > 0) {
-            updateDeliveries(deliveryrequests);
+    // Mettre à jour la carte si les données sont présentes
+    if (nodes.length > 0 && segments.length > 0) {
+        updateMap(nodes, segments);
+        if (deliveryRequests.length > 0) {
+            updateDeliveries(nodes, deliveryRequests);
         }
     }
 
@@ -433,7 +502,7 @@
     });
 
     // Ajouter un marqueur pour la warehouse en vert
-    var warehouse = deliveryrequests.find(delivery => delivery.idWarehouse !== null);
+    var warehouse = deliveryRequests.find(delivery => delivery.idWarehouse !== null);
     if (warehouse) {
         var warehouseNode = nodes.find(node => node.id === warehouse.idWarehouse);
         L.marker([warehouseNode.latitude, warehouseNode.longitude], {icon: L.icon({iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]})})
@@ -442,7 +511,7 @@
     }
 
     // Ajouter des marqueurs pour chaque pickup et delivery
-    deliveryrequests.forEach(function(delivery) {
+    deliveryRequests.forEach(function(delivery) {
         var pickup = nodes.find(node => node.id === delivery.idPickup);
         var deliveryNode = nodes.find(node => node.id === delivery.idDelivery);
 
