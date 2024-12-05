@@ -13,5 +13,5 @@ public class DeliveryRequest {
 
         private Long idWarehouse;
 
-        private Long idCourrier;
+        private Long idCourier;
 }

@@ -22,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -655,5 +656,49 @@ public class OptimodProxy {
         restTemplate.delete(deleteAllCouriersUrl);
 
         log.debug("Delete all couriers called");
+    }
+
+    public Map<String, Object> assignCourier(Long courierId, Long deliveryRequestId) {
+        String apiUrl = customProperties.getApiUrl();
+        String assignCourierUrl = apiUrl + "/assignCourier";
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        // Création du corps de la requête sous forme de Map (pour convertir en JSON)
+        Map<String, Object> body = new HashMap<>();
+        body.put("courierId", courierId);
+        body.put("deliveryRequestId", deliveryRequestId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON); // Spécifier le type de contenu JSON
+
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+        try {
+            // Envoi de la requête PUT avec JSON
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    assignCourierUrl,
+                    HttpMethod.PUT,
+                    requestEntity,
+                    Map.class
+            );
+
+            return response.getBody();
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            // Extraire le corps de la réponse d'erreur
+            String responseBody = e.getResponseBodyAsString();
+            log.error("Server responded with error: " + responseBody);
+
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                // Convertir la réponse JSON d'erreur en Map
+                return mapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
+            } catch (JsonProcessingException jsonException) {
+                throw new RuntimeException("Failed to parse error response: " + responseBody);
+            }
+        } catch (Exception e) {
+            log.error("Unexpected error during assign courier: ", e);
+            throw new RuntimeException("Unexpected error occurred: " + e.getMessage());
+        }
     }
 }

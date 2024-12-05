@@ -36,7 +36,7 @@ public class OptimodController {
     }
 
     @PostMapping("/loadMap")
-    public ResponseEntity<Map<String, Object>> loadMap(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Map<String, Object>> loadMap(@RequestParam("file") MultipartFile file, Model model) {
         try {
 
             Map<String, Object> response = optimodProxy.loadMap(file);
@@ -45,6 +45,9 @@ public class OptimodController {
                 // Propager l'erreur du service en tant que réponse HTTP 500
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
             }
+
+            model.addAttribute("nodes", optimodProxy.getAllNodes());
+            model.addAttribute("segments", optimodProxy.getAllSegments());
 
             return ResponseEntity.ok(response);
 
@@ -59,17 +62,20 @@ public class OptimodController {
     }
 
     @PostMapping("/loadDeliveryRequest")
-    public ResponseEntity<Map<String, Object>> loadDeliveryRequest(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Map<String, Object>> loadDeliveryRequest(@RequestParam("file") MultipartFile file, Model model) {
         try {
 
             Map<String, Object> response = optimodProxy.loadDeliveryRequest(file);
 
             response.put("nodes", optimodProxy.getAllNodes());
+            response.put("couriers", optimodProxy.getAllCouriers());
 
             if (response.containsKey("error")) {
                 // Propager l'erreur du service en tant que réponse HTTP 500
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
             }
+
+            model.addAttribute("deliveryRequests", optimodProxy.getAllDeliveryRequests());
 
             return ResponseEntity.ok(response);
 
@@ -82,6 +88,12 @@ public class OptimodController {
         }
     }
 
+    @GetMapping("/deleteAllNodes")
+    public ModelAndView deleteAllNodes() {
+        optimodProxy.deleteAllNodes();
+        return new ModelAndView("redirect:/");
+    }
+
     @GetMapping("/deleteDeliveryRequest/{id}")
     public ModelAndView deleteDeliveryRequest(@PathVariable("id") final Long id) {
         optimodProxy.deleteDeliveryRequestById(id);
@@ -92,5 +104,28 @@ public class OptimodController {
     public ModelAndView deleteAllDeliveryRequests() {
         optimodProxy.deleteAllDeliveryRequests();
         return new ModelAndView("redirect:/");
+    }
+
+    @PostMapping("assignCourier")
+    public ResponseEntity<Map<String, Object>> assignCourier(@RequestParam("courierId") Long courierId, @RequestParam("deliveryRequestId") Long deliveryRequestId, Model model) {
+        try {
+            Map<String, Object> response = optimodProxy.assignCourier(courierId, deliveryRequestId);
+
+            if (response.containsKey("error")) {
+                // Propager l'erreur du service en tant que réponse HTTP 500
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            }
+
+            model.addAttribute("deliveryRequests", optimodProxy.getAllDeliveryRequests());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Erreur lors de l'assignation du coursier.",
+                    "details", e.getMessage()
+            ));
+        }
     }
 }
