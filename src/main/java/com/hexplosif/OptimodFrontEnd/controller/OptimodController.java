@@ -36,7 +36,7 @@ public class OptimodController {
     }
 
     @PostMapping("/loadMap")
-    public ResponseEntity<Map<String, Object>> loadMap(@RequestParam("file") MultipartFile file, Model model) {
+    public ResponseEntity<Map<String, Object>> loadMap(@RequestParam("file") MultipartFile file) {
         try {
 
             Map<String, Object> response = optimodProxy.loadMap(file);
@@ -45,9 +45,6 @@ public class OptimodController {
                 // Propager l'erreur du service en tant que réponse HTTP 500
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
             }
-
-            model.addAttribute("nodes", optimodProxy.getAllNodes());
-            model.addAttribute("segments", optimodProxy.getAllSegments());
 
             return ResponseEntity.ok(response);
 
@@ -62,7 +59,7 @@ public class OptimodController {
     }
 
     @PostMapping("/loadDeliveryRequest")
-    public ResponseEntity<Map<String, Object>> loadDeliveryRequest(@RequestParam("file") MultipartFile file, Model model) {
+    public ResponseEntity<Map<String, Object>> loadDeliveryRequest(@RequestParam("file") MultipartFile file) {
         try {
 
             Map<String, Object> response = optimodProxy.loadDeliveryRequest(file);
@@ -74,8 +71,6 @@ public class OptimodController {
                 // Propager l'erreur du service en tant que réponse HTTP 500
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
             }
-
-            model.addAttribute("deliveryRequests", optimodProxy.getAllDeliveryRequests());
 
             return ResponseEntity.ok(response);
 
@@ -106,8 +101,8 @@ public class OptimodController {
         return new ModelAndView("redirect:/");
     }
 
-    @PostMapping("assignCourier")
-    public ResponseEntity<Map<String, Object>> assignCourier(@RequestParam("courierId") Long courierId, @RequestParam("deliveryRequestId") Long deliveryRequestId, Model model) {
+    @PostMapping("/assignCourier")
+    public ResponseEntity<Map<String, Object>> assignCourier(@RequestParam("courierId") Long courierId, @RequestParam("deliveryRequestId") Long deliveryRequestId) {
         try {
             Map<String, Object> response = optimodProxy.assignCourier(courierId, deliveryRequestId);
 
@@ -116,7 +111,9 @@ public class OptimodController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
             }
 
-            model.addAttribute("deliveryRequests", optimodProxy.getAllDeliveryRequests());
+            response.put("nodes", optimodProxy.getAllNodes());
+            response.put("couriers", optimodProxy.getAllCouriers());
+            response.put("deliveryRequests", optimodProxy.getAllDeliveryRequests());
 
             return ResponseEntity.ok(response);
 

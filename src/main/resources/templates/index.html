@@ -27,7 +27,7 @@
             text-align: center;
         }
         #map {
-            height: 300px;
+            height: 350px;
             position: relative;
         }
 
@@ -54,7 +54,8 @@
         }
 
         .table-responsive {
-            max-height: 180px;
+            max-height: 250px;
+            height: fit-content;
         }
 
         @keyframes spinner-border {
@@ -220,14 +221,16 @@
                     <td><span th:text="${delivery.idPickup}"> Pickup </span></td>
                     <td><span th:text="${delivery.idDelivery}"> Delivery </span></td>
                     <td><span th:text="${delivery.idWarehouse}"> Warehouse </span></td>
-                    <td th:if="${delivery.idCourier} != null"><span th:text="${delivery.idCourier}"> Courier </span></td>
-                    <td th:unless="${delivery.idCourier} != null">
+                    <td>
                         <form id="assignCourierForm">
-                            <input type="hidden" name="deliveryRequestId" th:value="${delivery.id}">
-                            <div class="mb-3">
-                                <select class="form-select" name="courierId" id="courierSelect" required onchange="assignCourier()">
-                                    <option value="">Sélectionner un livreur</option>
-                                    <option th:each="courier: ${couriers}" th:value="${courier.id}" th:text="${courier.name}"></option>
+                            <input type="hidden" th:name="'deliveryRequest-' + ${delivery.id}" th:value="${delivery.id}">
+                            <div>
+                                <select class="form-select" name="courierId" th:id="'courierSelect-' + ${delivery.id}" required th:onchange="'assignCourier(' + ${delivery.id} + ')'">
+                                    <option th:if="${delivery.idCourier}" th:value="${delivery.idCourier}" th:text="${delivery.idCourier}"></option>
+                                    <option th:if="${delivery.idCourier == null}" value="">Sélectionner un livreur</option>
+
+                                    <!-- On affiche les livreurs disponibles hors celui déjà assigné -->
+                                    <option th:each="courier: ${couriers}" th:if="${courier.id != delivery.idCourier}" th:value="${courier.id}" th:text="${courier.name}"></option>
                                 </select>
                             </div>
                         </form>
@@ -299,10 +302,13 @@
     // VA FALLOIR UN FICHIER A PART POUR LES FONCTIONS JS
 
     // Fonction pour assigner un livreur à une livraison
-    function assignCourier() {
-        const deliveryRequestId = document.querySelector('[name="deliveryRequestId"]').value;
+    function assignCourier(deliveryRequestId) {
         const courierSelect = document.getElementById('courierSelect-' + deliveryRequestId);
         const selectedCourierId = courierSelect.value;
+
+        console.log(deliveryRequestId);
+        console.log(courierSelect);
+        console.log(selectedCourierId);
 
         if (!selectedCourierId) {
             displayMessage('message', 'Veuillez sélectionner un livreur.', false);
@@ -326,13 +332,8 @@
                     displayMessage('message', data.error, false);
                 } else {
                     displayMessage('message', 'Livreur assigné avec succès !', true);
-                    var nodes = /*[[${nodes}]]*/ [];
-                    var deliveryRequests = /*[[${deliveryRequests}]]*/ [];
-                    var couriers = /*[[${couriers}]]*/ [];
-                    console.log(nodes);
-                    console.log(deliveryRequests);
-                    console.log(couriers);
-                    updateDeliveries(nodes, deliveryRequests, couriers);
+
+                    updateDeliveries(data.nodes, data.deliveryRequests, data.couriers);
                 }
             })
             .catch(() => {
@@ -384,7 +385,7 @@
                 L.polyline([
                     [origin.latitude, origin.longitude],
                     [destination.latitude, destination.longitude]
-                ], { color: '#dedede', weight: 1 }).addTo(map);
+                ], { color: '#ffacac', weight: 1 }).addTo(map);
             }
         });
 
@@ -461,20 +462,37 @@
         // Crée une nouvelle ligne de la table
         let courierSelectOptions = '';
         couriers.forEach(courier => {
-            courierSelectOptions += `<option value="${courier.id}">${courier.name}</option>`;
+            if (courier.id !== delivery.idCourier) {
+                courierSelectOptions += `<option value="${courier.id}">${courier.name}</option>`;
+            }
         });
+
+        console.log(delivery);
 
         let courierCell = '';
         if (delivery.idCourier) {
+            console.log(delivery.idCourier);
             // Si un livreur est déjà assigné, on affiche son nom
-            courierCell = `<td>${delivery.idCourier}</td>`;
+            courierCell = `
+            <td>
+                <form id="assignCourierForm">
+                    <input type="hidden" name="deliveryRequest-${delivery.id}" value="${delivery.id}">
+                    <div>
+                        <select class="form-select" name="courierId" id="courierSelect-${delivery.id}" required onchange="assignCourier(${delivery.id})">
+                            <option value="${delivery.idCourier}">${couriers.find(courier => courier.id === delivery.idCourier).name}</option>
+                            ${courierSelectOptions}
+                        </select>
+                    </div>
+                </form>
+            </td>
+            `;
         } else {
             // Sinon, on affiche un select pour choisir un livreur
             courierCell = `
             <td>
                 <form id="assignCourierForm">
-                    <input type="hidden" name="deliveryRequestId" value="${delivery.id}">
-                    <div class="mb-3">
+                    <input type="hidden" name="deliveryRequest-${delivery.id}" value="${delivery.id}">
+                    <div>
                         <select class="form-select" name="courierId" id="courierSelect-${delivery.id}" required onchange="assignCourier(${delivery.id})">
                             <option value="">Sélectionner un livreur</option>
                             ${courierSelectOptions}
@@ -591,6 +609,11 @@
     var segments = /*[[${segments}]]*/ [];
     var deliveryRequests = /*[[${deliveryRequests}]]*/ [];
     var couriers = /*[[${couriers}]]*/ [];
+
+    console.log(nodes);
+    console.log(segments);
+    console.log(deliveryRequests);
+    console.log(couriers);
 
     // Ne pas afficher la carte si aucun node n'est chargé
     toggleMapVisibility(nodes, segments);
