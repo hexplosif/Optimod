@@ -92,10 +92,11 @@
         </div>
     </div>
 
-    <div id="map">
-        <div class="loading-overlay" id="loadingOverlay">
-            <div class="spinner-border"></div>
-        </div>
+    <div id="map" class="container-fluid rounded-3 border">
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-border"></div>
     </div>
 
     <div id="buttonContainer" class="container d-flex mt-3">
@@ -520,6 +521,7 @@
     // Fonction générique pour uploader une carte
     function uploadMap(url, formId) {
         const formData = new FormData(document.getElementById(formId));
+
         toggleLoading(true);
 
         fetch(url, {
