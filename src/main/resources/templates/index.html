@@ -112,6 +112,9 @@
         <a th:href="@{/deleteAllNodes}" class="me-2"><button class="btn btn-danger">Supprimer la carte</button></a>
 
         <a th:href="@{/deleteAllDeliveryRequests}" class="me-2"><button class="btn btn-danger">Supprimer toutes les livraisons</button></a>
+
+        <button onclick="calculateOptimalRoute()" class="btn btn-primary me-2">Calculer la route optimale</button>
+
     </div>
 
     <!--
@@ -302,14 +305,92 @@
 
     // VA FALLOIR UN FICHIER A PART POUR LES FONCTIONS JS
 
+    // Fonction qui affiche la route optimale
+    function displayOptimalRoute(route, nodes) {
+        // Supprimer les anciennes couches de segments
+        map.eachLayer(layer => layer instanceof L.Polyline && map.removeLayer(layer));
+
+        // Couleur initiale (bleu clair) et décrément
+        let red = 170, green = 221, blue = 255; // Valeurs RGB pour bleu clair
+        const decrement = 0.1; // Valeur pour foncer le bleu
+
+        // Ajouter les nouveaux segments
+        for (let i = 0; i < route.length - 1; i++) {
+            const origin = nodes.find(node => node.id === route[i]);
+            const destination = nodes.find(node => node.id === route[i + 1]);
+            const offsetFactor = 0.0000001; // Facteur pour décaler légèrement les lignes
+
+            if (origin && destination) {
+
+                // Appliquer un décalage léger basé sur l'indice du segment
+                const offset = i * offsetFactor;
+                const adjustedOrigin = [
+                    origin.latitude + offset,
+                    origin.longitude + offset
+                ];
+                const adjustedDestination = [
+                    destination.latitude + offset,
+                    destination.longitude + offset
+                ];
+
+                // Ajouter le segment avec la couleur actuelle
+                const color = `rgb(${red}, ${green}, ${blue})`;
+
+                L.polyline([
+                    adjustedOrigin,
+                    adjustedDestination
+                ], { color: "#ffffff", weight: 10, smoothFactor: 1 }).addTo(map);
+
+                L.polyline([
+                    adjustedOrigin,
+                    adjustedDestination
+                ], { color, weight: 8, smoothFactor: 1 }).addTo(map);
+
+
+
+                // Foncé progressivement la couleur
+                blue = Math.max(blue - decrement, 0); // Réduire l'intensité du bleu
+                green = Math.max(green - decrement, 0); // Réduire l'intensité du vert
+                red = Math.min(red + decrement, 255); // Augmenter l'intensité du rouge
+            }
+        }
+
+        // Ajuster la vue de la carte pour inclure tous les marqueurs
+        if (nodes.length > 0) {
+            const bounds = L.latLngBounds(nodes.map(node => [node.latitude, node.longitude]));
+            map.fitBounds(bounds);
+        }
+
+        // Afficher la carte si les données sont chargées
+        toggleMapVisibility(nodes, route);
+    }
+
+    // Fonction qui recupere la liste de nodes correspondant au chemin optimal
+    function calculateOptimalRoute(){
+
+        fetch('/calculateOptimalRoute', {
+            method: 'GET',
+        })
+            .then(response => response.json()) // S'assurer que la réponse est en JSON
+            .then(data => {
+
+                if (data.error) {
+                    displayMessage('message', data.error, false);
+                    return;
+                }
+
+                displayMessage('message', 'Route calculée avec succès !', true);
+                displayOptimalRoute(data.route, data.nodes);
+            })
+            .catch(() => {
+                displayMessage('message', 'Erreur innatendue lors du calcul de la route.', false);
+            });
+    }
+
     // Fonction pour assigner un livreur à une livraison
     function assignCourier(deliveryRequestId) {
         const courierSelect = document.getElementById('courierSelect-' + deliveryRequestId);
         const selectedCourierId = courierSelect.value;
-
-        console.log(deliveryRequestId);
-        console.log(courierSelect);
-        console.log(selectedCourierId);
 
         if (!selectedCourierId) {
             displayMessage('message', 'Veuillez sélectionner un livreur.', false);
@@ -468,11 +549,8 @@
             }
         });
 
-        console.log(delivery);
-
         let courierCell = '';
         if (delivery.idCourier) {
-            console.log(delivery.idCourier);
             // Si un livreur est déjà assigné, on affiche son nom
             courierCell = `
             <td>
@@ -611,11 +689,6 @@
     var segments = /*[[${segments}]]*/ [];
     var deliveryRequests = /*[[${deliveryRequests}]]*/ [];
     var couriers = /*[[${couriers}]]*/ [];
-
-    console.log(nodes);
-    console.log(segments);
-    console.log(deliveryRequests);
-    console.log(couriers);
 
     // Ne pas afficher la carte si aucun node n'est chargé
     toggleMapVisibility(nodes, segments);

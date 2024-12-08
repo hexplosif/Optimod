@@ -1,5 +1,6 @@
 package com.hexplosif.OptimodFrontEnd.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import com.hexplosif.OptimodFrontEnd.model.Courier;
@@ -121,6 +122,33 @@ public class OptimodController {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of(
                     "error", "Erreur lors de l'assignation du coursier.",
+                    "details", e.getMessage()
+            ));
+        }
+    }
+
+    @GetMapping("/calculateOptimalRoute")
+    public ResponseEntity<Map<String, Object>> calculateOptimalRoute() {
+        try {
+            List<Long> route = optimodProxy.calculateOptimalRoute();
+
+            if (route == null) {
+                return ResponseEntity.status(500).body(Map.of(
+                    "error", "Erreur lors du calcul de la route optimale."
+                ));
+            }
+
+            Map<String, Object> response = Map.of(
+                    "route", route,
+                    "nodes", optimodProxy.getAllNodes()
+            );
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Erreur lors du calcul de la route optimale.",
                     "details", e.getMessage()
             ));
         }

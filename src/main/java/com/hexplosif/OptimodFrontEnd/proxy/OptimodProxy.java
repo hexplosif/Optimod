@@ -701,4 +701,41 @@ public class OptimodProxy {
             throw new RuntimeException("Unexpected error occurred: " + e.getMessage());
         }
     }
+
+    public List<Long> calculateOptimalRoute() {
+        String apiUrl = customProperties.getApiUrl();
+        String calculateOptimalRouteUrl = apiUrl + "/calculateOptimalRoute";
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            // Envoi de la requête GET
+            ResponseEntity<List<Long>> response = restTemplate.exchange(
+                    calculateOptimalRouteUrl,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<Long>>() {
+                    }
+            );
+
+            return response.getBody();
+
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            // Extraire le corps de la réponse d'erreur
+            String responseBody = e.getResponseBodyAsString();
+            log.error("Server responded with error: " + responseBody);
+
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                // Convertir la réponse JSON d'erreur en Map
+                Map<String, Object> errorResponse = mapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
+                throw new RuntimeException("Failed to calculate optimal route: " + errorResponse.get("error"));
+            } catch (JsonProcessingException jsonException) {
+                throw new RuntimeException("Failed to parse error response: " + responseBody);
+            }
+        } catch (Exception e) {
+            log.error("Unexpected error during calculate optimal route: ", e);
+            throw new RuntimeException("Unexpected error occurred: " + e.getMessage());
+        }
+    }
 }
