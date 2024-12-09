@@ -658,6 +658,74 @@ public class OptimodProxy {
         log.debug("Delete all couriers called");
     }
 
+    public Map<String, Object> addCourier() {
+        String apiUrl = customProperties.getApiUrl();
+        String addCourierUrl = apiUrl + "/addCourier";
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            // Envoi de la requête POST avec JSON
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    addCourierUrl,
+                    HttpMethod.POST,
+                    null,
+                    Map.class
+            );
+
+            return response.getBody();
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            // Extraire le corps de la réponse d'erreur
+            String responseBody = e.getResponseBodyAsString();
+            log.error("Server responded with error: " + responseBody);
+
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                // Convertir la réponse JSON d'erreur en Map
+                return mapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
+            } catch (JsonProcessingException jsonException) {
+                throw new RuntimeException("Failed to parse error response: " + responseBody);
+            }
+        } catch (Exception e) {
+            log.error("Unexpected error during adding courier: ", e);
+            throw new RuntimeException("Unexpected error occurred: " + e.getMessage());
+        }
+    }
+
+    public Map<String, Object> deleteCourier() {
+        String apiUrl = customProperties.getApiUrl();
+        String deleteCourierUrl = apiUrl + "/deleteCourier";
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            // Envoi de la requête DELETE avec JSON
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    deleteCourierUrl,
+                    HttpMethod.DELETE,
+                    null,
+                    Map.class
+            );
+
+            return response.getBody();
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            // Extraire le corps de la réponse d'erreur
+            String responseBody = e.getResponseBodyAsString();
+            log.error("Server responded with error: " + responseBody);
+
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                // Convertir la réponse JSON d'erreur en Map
+                return mapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
+            } catch (JsonProcessingException jsonException) {
+                throw new RuntimeException("Failed to parse error response: " + responseBody);
+            }
+        } catch (Exception e) {
+            log.error("Unexpected error during adding courier: ", e);
+            throw new RuntimeException("Unexpected error occurred: " + e.getMessage());
+        }
+    }
+
     public Map<String, Object> assignCourier(Long courierId, Long deliveryRequestId) {
         String apiUrl = customProperties.getApiUrl();
         String assignCourierUrl = apiUrl + "/assignCourier";

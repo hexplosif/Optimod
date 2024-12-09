@@ -102,6 +102,24 @@ public class OptimodController {
         return new ModelAndView("redirect:/");
     }
 
+    @GetMapping("/addCourier")
+    public ModelAndView addCourrier(Model model) {
+        optimodProxy.addCourier();
+        return new ModelAndView("redirect:/");
+    }
+
+    @GetMapping("/deleteCourier")
+    public ModelAndView deleteCourrier(Model model) {
+        optimodProxy.deleteCourier();
+        return new ModelAndView("redirect:/");
+    }
+
+    @GetMapping("/deleteCourier/{id}")
+    public ModelAndView deleteCourrier(@PathVariable("id") final Long id) {
+        optimodProxy.deleteCourierById(id);
+        return new ModelAndView("redirect:/");
+    }
+
     @PostMapping("/assignCourier")
     public ResponseEntity<Map<String, Object>> assignCourier(@RequestParam("courierId") Long courierId, @RequestParam("deliveryRequestId") Long deliveryRequestId) {
         try {
