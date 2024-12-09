@@ -20,14 +20,13 @@
     <style>
         body {
             padding-top: 50px;
-            overflow: hidden;
         }
         td, th, tr, tbody, thead {
             border-style: none;
             text-align: center;
         }
         #map {
-            height: 350px;
+            height: 400px;
             position: relative;
         }
 
@@ -87,8 +86,8 @@
     <div class="p-5 mt-3 bg-body-tertiary rounded-3 border" id="welcome">
         <div class="container-fluid">
             <h1 class="display-5 fw-bold">Optimod</h1>
-            <p class="lead">Bienvenue sur Optimod, l'outil de gestion de livraisons.</p>
-            <p class="col-md-8 fs-4">Pour commencer, veuillez charger une carte et des livraisons.</p>
+            <p class="lead">Welcome to Optimod, the delivery management tool.</p>
+            <p class="col-md-8 fs-4">To get started, please load a map and deliveries.</p>
         </div>
     </div>
 
@@ -109,82 +108,19 @@
                 <input type="file" class="btn btn-primary form-control-file" id="deliveryFiles" name="files" accept=".xml" onchange="uploadMultipleDeliveries('/loadDeliveryRequest', 'loadDeliveryRequestForm')" style="display: none" multiple>
         </form>
 
-        <a th:href="@{/deleteAllNodes}" class="me-2"><button class="btn btn-danger">Supprimer la carte</button></a>
+        <a th:href="@{/deleteAllNodes}" class="me-2"><button class="btn btn-danger">Remove map</button></a>
 
-        <a th:href="@{/deleteAllDeliveryRequests}" class="me-2"><button class="btn btn-danger">Supprimer toutes les livraisons</button></a>
+        <a th:href="@{/deleteAllDeliveryRequests}" class="me-2"><button class="btn btn-danger">Remove all deliveries</button></a>
 
-        <button onclick="calculateOptimalRoute()" class="btn btn-primary me-2">Calculer la route optimale</button>
+        <button onclick="calculateOptimalRoute()" class="btn btn-primary me-2">Compute optimal tour</button>
 
     </div>
-
-    <!--
-    <h2 class="h2">Liste des nodes</h2>
-    <div class="table-responsive">
-        <table class="table table-striped table-sm">
-            <thead>
-            <tr>
-                <th>Id</th>
-                <th>Latitude</th>
-                <th>Longitude</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:if="${nodes.empty}">
-                <td colspan="3">Aucun node en base de données</td>
-            </tr>
-            <tr th:each="node: ${nodes}">
-                <td><span th:text="${node.id}"> Prénom </span></td>
-                <td><span th:text="${node.latitude}"> Nom </span></td>
-                <td><span th:text="${node.longitude}"> Nom </span></td>
-                <td>
-                    <a th:href="@{/updateNode/{id}(id=${node.id})}"><button class="btn btn-info">Modifier</button></a>
-                    <a th:href="@{/deleteNode/{id}(id=${node.id})}"><button class="btn btn-danger">Supprimer</button></a>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <h4><a th:href="@{/createNode}">Ajouter un nouveau node</a></h4>
-    </div>
-
-    <h2 class="h2">Liste des segments</h2>
-    <div class="table-responsive">
-        <table class="table table-striped table-sm">
-            <thead>
-            <tr>
-                <th>Id</th>
-                <th>Node de départ</th>
-                <th>Node d'arrivée</th>
-                <th>Longueur</th>
-                <th>Name</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:if="${segments.empty}">
-                <td colspan="4">Aucun segment en base de données</td>
-            </tr>
-            <tr th:each="segment: ${segments}">
-                <td><span th:text="${segment.id}"> Id </span></td>
-                <td><span th:text="${segment.idOrigin}"> Origine </span></td>
-                <td><span th:text="${segment.idDestination}"> Destination </span></td>
-                <td><span th:text="${segment.length}"> Longueur </span></td>
-                <td><span th:text="${segment.name}"> Nom </span></td>
-                <td>
-                    <a th:href="@{/updateSegment/{id}(id=${segment.id})}"><button class="btn btn-info">Modifier</button></a>
-                    <a th:href="@{/deleteSegment/{id}(id=${segment.id})}"><button class="btn btn-danger">Supprimer</button></a>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <h4><a th:href="@{/createSegment}">Ajouter un nouveau segment</a></h4>
-    </div>
-
-    -->
 
     <!-- Modification du nombre de livreurs -->
-    <div class="container d-flex mt-3">
-        <h4 class="h4 text-center text-primary me-3">Nombre de livreurs</h4>
-        <div class="d-flex flex-column align-items-center">
-            <div class="input-group" style="max-width: 300px;">
+    <div class="container d-flex flex-column align-item-left">
+        <div class="text-left text-primary mx-1">Courier(s)</div>
+        <div class="d-flex flex-column align-items-left">
+            <div class="input-group" style="max-width: 150px;">
                 <!-- Bouton de diminution -->
                 <button type="button" class="btn btn-primary rounded-start" onclick="updateCourierCount(-1)">
                     <strong>-</strong>
@@ -213,12 +149,12 @@
                     <th>Delivery</th>
                     <th>Warehouse</th>
                     <th>Courier</th>
-                    <th>Actions</th>
+                    <th>Action</th>
                 </tr>
                 </thead>
                 <tbody id="deliveries">
                 <tr th:if="${deliveryRequests.empty}">
-                    <td colspan="6">Aucune livraison en base de données</td>
+                    <td colspan="6">No deliveries in the database.</td>
                 </tr>
                 <tr th:each="delivery: ${deliveryRequests}">
                     <td><span th:text="${delivery.id}"> Id </span></td>
@@ -253,9 +189,9 @@
                 <thead class="table-dark text-center rounded-top-3">
                 <tr>
                     <th>Id</th>
-                    <th>Nom</th>
+                    <th>Name</th>
                     <th>Icon</th>
-                    <th>Actions</th>
+                    <th>Action</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -265,7 +201,10 @@
                 <tr th:each="courier: ${couriers}">
                     <td><span th:text="${courier.id}"> Id </span></td>
                     <td><span th:text="${courier.name}"> Name </span></td>
-                    <td><img src="https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png" alt="Icon" style="width: 25px; height: 41px;"></td>
+                    <td>
+                        <!-- Image générée par l'API -->
+                        <img th:src="'https://randomuser.me/api/portraits/men/' + ${courier.id} + '.jpg'" alt="Profile Icon" style="width: 40px; height: 40px; border-radius: 50%;">
+                    </td>
                     <td>
                         <a th:href="@{/deleteCourier/{id}(id=${courier.id})}"><button class="btn btn-danger">Supprimer</button></a>
                     </td>
@@ -498,7 +437,7 @@
                         iconAnchor: [12, 41],
                         popupAnchor: [1, -34]
                     })
-                }).addTo(map).bindPopup("<strong>Warehouse</strong>");
+                }).addTo(map).bindPopup(`<strong>Warehouse</strong><br/>${warehouseNode.latitude}, ${warehouseNode.longitude}`);
             } else {
                 displayMessage('message', 'Warehouse node not found. Ensure map is loaded first or is large enough to include all nodes.', false);
                 return;
@@ -534,7 +473,7 @@
                 iconAnchor: [12, 41],
                 popupAnchor: [1, -34]
             })
-        }).addTo(map).bindPopup(`<strong>${type}</strong>`);
+        }).addTo(map).bindPopup(`<strong>${type}</strong><br/>${node.latitude}, ${node.longitude}`)
     }
 
     // Fonction pour mettre à jour la table des livraisons
