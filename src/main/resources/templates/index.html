@@ -122,18 +122,18 @@
         <div class="d-flex flex-column align-items-left">
             <div class="input-group" style="max-width: 150px;">
                 <!-- Bouton de diminution -->
-                <a type="button" class="btn btn-primary rounded-start" th:href="@{/deleteCourier}">
+                <button type="button" class="btn btn-primary rounded-start" onclick="updateCourierCount(-1)">
                     <strong>-</strong>
-                </a>
+                </button>
 
                 <!-- Champ de saisie -->
-                <input type="number" class="form-control text-center d-none" id="couriers" name="couriers" th:value="${couriers.size()}" min="0" readonly>
-                <span id="courierCount" class="form-control text-center bg-light border-primary" style="width: 50px;" th:text="${couriers.size()}"></span>
+                <input type="number" class="form-control text-center d-none" id="couriers" name="couriers" value="1" min="1" readonly>
+                <span id="courierCount" class="form-control text-center bg-light border-primary" style="width: 50px;">1</span>
 
                 <!-- Bouton d'incrémentation -->
-                <a type="button" class="btn btn-primary rounded-end" th:href="@{/addCourier}">
+                <button type="button" class="btn btn-primary rounded-end" onclick="updateCourierCount(1)">
                     <strong>+</strong>
-                </a>
+                </button>
             </div>
         </div>
     </div>
@@ -196,7 +196,7 @@
                 </thead>
                 <tbody>
                 <tr th:if="${couriers.empty}">
-                    <td colspan="5">No courier in the database</td>
+                    <td colspan="5">Aucun livreur en base de données</td>
                 </tr>
                 <tr th:each="courier: ${couriers}">
                     <td><span th:text="${courier.id}"> Id </span></td>
