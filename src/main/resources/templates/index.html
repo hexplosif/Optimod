@@ -245,52 +245,121 @@
     // VA FALLOIR UN FICHIER A PART POUR LES FONCTIONS JS
 
     // Fonction qui affiche la route optimale
-    function displayOptimalRoute(route, nodes) {
+    function displayOptimalRoute(routes, nodes) {
         // Supprimer les anciennes couches de segments
         map.eachLayer(layer => layer instanceof L.Polyline && map.removeLayer(layer));
 
         // Couleur initiale (bleu clair) et décrément
         let red = 170, green = 221, blue = 255; // Valeurs RGB pour bleu clair
+
+        // Tableau de couleurs pour les segments (bleu -> vert -> rouge -> violet -> etc.)
+        const colors = [
+            '#00ffff', // Cyan
+            '#00ff00', // Vert
+            '#ff0000', // Rouge
+            '#ff00ff', // Magenta
+            '#0000ff', // Bleu
+            '#ffff00', // Jaune
+            '#00ffff', // Cyan
+            '#00ff00', // Vert
+            '#ff0000', // Rouge
+            '#ff00ff', // Magenta
+            '#0000ff', // Bleu
+            '#ffff00', // Jaune
+            '#00ffff', // Cyan
+            '#00ff00', // Vert
+            '#ff0000', // Rouge
+            '#ff00ff', // Magenta
+            '#0000ff', // Bleu
+            '#ffff00', // Jaune
+            '#00ffff', // Cyan
+            '#00ff00', // Vert
+            '#ff0000', // Rouge
+            '#ff00ff', // Magenta
+            '#0000ff', // Bleu
+            '#ffff00', // Jaune
+            '#00ffff', // Cyan
+            '#00ff00', // Vert
+            '#ff0000', // Rouge
+            '#ff00ff', // Magenta
+            '#0000ff', // Bleu
+            '#ffff00', // Jaune
+            '#00ffff', // Cyan
+            '#00ff00', // Vert
+            '#ff0000', // Rouge
+            '#ff00ff', // Magenta
+            '#0000ff', // Bleu
+            '#ffff00', // Jaune
+            '#00ffff', // Cyan
+            '#00ff00', // Vert
+            '#ff0000', // Rouge
+            '#ff00ff', // Magenta
+            '#0000ff', // Bleu
+            '#ffff00', // Jaune
+            '#00ffff', // Cyan
+            '#00ff00', // Vert
+            '#ff0000', // Rouge
+            '#ff00ff', // Magenta
+            '#0000ff', // Bleu
+            '#ffff00', // Jaune
+            '#00ffff', // Cyan
+            '#00ff00', // Vert
+            '#ff0000', // Rouge
+            '#ff00ff', // Magenta
+            '#0000ff', // Bleu
+            '#ffff00', // Jaune
+            '#00ffff', // Cyan
+        ];
         const decrement = 0.1; // Valeur pour foncer le bleu
 
+        console.log(routes);
+
         // Ajouter les nouveaux segments
-        for (let i = 0; i < route.length - 1; i++) {
-            const origin = nodes.find(node => node.id === route[i]);
-            const destination = nodes.find(node => node.id === route[i + 1]);
-            const offsetFactor = 0.0000001; // Facteur pour décaler légèrement les lignes
+        for (let i = 0; i < routes.length; i++) {
 
-            if (origin && destination) {
+            console.log(routes[i].length);
+            if (routes[i].length === 0) {
+                continue;
+            }
 
-                // Appliquer un décalage léger basé sur l'indice du segment
-                const offset = i * offsetFactor;
-                const adjustedOrigin = [
-                    origin.latitude + offset,
-                    origin.longitude + offset
-                ];
-                const adjustedDestination = [
-                    destination.latitude + offset,
-                    destination.longitude + offset
-                ];
+            for (let j = 0; j < routes[i].length - 1; j++) {
 
-                // Ajouter le segment avec la couleur actuelle
-                const color = `rgb(${red}, ${green}, ${blue})`;
+                const origin = nodes.find(node => node.id === routes[i][j]);
+                const destination = nodes.find(node => node.id === routes[i][j+1]);
+                const offsetFactor = 0.0000001; // Facteur pour décaler légèrement les lignes
 
-                L.polyline([
-                    adjustedOrigin,
-                    adjustedDestination
-                ], { color: "#ffffff", weight: 10, smoothFactor: 1 }).addTo(map);
+                if (origin && destination) {
 
-                L.polyline([
-                    adjustedOrigin,
-                    adjustedDestination
-                ], { color, weight: 8, smoothFactor: 1 }).addTo(map);
+                    // Appliquer un décalage léger basé sur l'indice du segment
+                    const offset = i * offsetFactor;
+                    const adjustedOrigin = [
+                        origin.latitude + offset,
+                        origin.longitude + offset
+                    ];
+                    const adjustedDestination = [
+                        destination.latitude + offset,
+                        destination.longitude + offset
+                    ];
+
+                    // Ajouter le segment avec la couleur actuelle
+                    const color = colors[Math.min(i, colors.length - 1)];
+
+                    L.polyline([
+                        adjustedOrigin,
+                        adjustedDestination
+                    ], {color: "#ffffff", weight: 10, smoothFactor: 1}).addTo(map);
+
+                    L.polyline([
+                        adjustedOrigin,
+                        adjustedDestination
+                    ], {color, weight: 8, smoothFactor: 1}).addTo(map);
 
 
-
-                // Foncé progressivement la couleur
-                blue = Math.max(blue - decrement, 0); // Réduire l'intensité du bleu
-                green = Math.max(green - decrement, 0); // Réduire l'intensité du vert
-                red = Math.min(red + decrement, 255); // Augmenter l'intensité du rouge
+                    // Foncé progressivement la couleur
+                    blue = Math.max(blue - decrement, 0); // Réduire l'intensité du bleu
+                    green = Math.max(green - decrement, 0); // Réduire l'intensité du vert
+                    red = Math.min(red + decrement, 255); // Augmenter l'intensité du rouge
+                }
             }
         }
 
@@ -300,8 +369,6 @@
             map.fitBounds(bounds);
         }
 
-        // Afficher la carte si les données sont chargées
-        toggleMapVisibility(nodes, route);
     }
 
     // Fonction qui recupere la liste de nodes correspondant au chemin optimal
@@ -319,7 +386,7 @@
                 }
 
                 displayMessage('message', 'Route calculée avec succès !', true);
-                displayOptimalRoute(data.route, data.nodes);
+                displayOptimalRoute(data.routes, data.nodes);
             })
             .catch(() => {
                 displayMessage('message', 'Erreur innatendue lors du calcul de la route.', false);

@@ -770,7 +770,7 @@ public class OptimodProxy {
         }
     }
 
-    public List<Long> calculateOptimalRoute() {
+    public List<List<Long>> calculateOptimalRoute() {
         String apiUrl = customProperties.getApiUrl();
         String calculateOptimalRouteUrl = apiUrl + "/calculateOptimalRoute";
 
@@ -778,11 +778,11 @@ public class OptimodProxy {
 
         try {
             // Envoi de la requête GET
-            ResponseEntity<List<Long>> response = restTemplate.exchange(
+            ResponseEntity<List<List<Long>>> response = restTemplate.exchange(
                     calculateOptimalRouteUrl,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<List<Long>>() {
+                    new ParameterizedTypeReference<List<List<Long>>>() {
                     }
             );
 

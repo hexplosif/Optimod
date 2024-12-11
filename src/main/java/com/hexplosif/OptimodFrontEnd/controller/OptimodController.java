@@ -148,16 +148,16 @@ public class OptimodController {
     @GetMapping("/calculateOptimalRoute")
     public ResponseEntity<Map<String, Object>> calculateOptimalRoute() {
         try {
-            List<Long> route = optimodProxy.calculateOptimalRoute();
+            List<List<Long>> routes = optimodProxy.calculateOptimalRoute();
 
-            if (route == null) {
+            if (routes == null) {
                 return ResponseEntity.status(500).body(Map.of(
                     "error", "Erreur lors du calcul de la route optimale."
                 ));
             }
 
             Map<String, Object> response = Map.of(
-                    "route", route,
+                    "routes", routes,
                     "nodes", optimodProxy.getAllNodes()
             );
 
