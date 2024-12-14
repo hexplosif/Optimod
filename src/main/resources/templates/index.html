@@ -235,6 +235,41 @@
     var deliveryRequests = /*[[${deliveryRequests}]]*/ [];
     var couriers = /*[[${couriers}]]*/ [];
 
+    // Tableau de couleurs pour les segments (bleu -> vert -> rouge -> violet -> etc.)
+    const colors = [
+        '#FF5733', // Orange vif
+        '#33FF57', // Vert lumineux
+        '#3357FF', // Bleu vif
+        '#FF33A1', // Rose néon
+        '#FFC733', // Jaune chaud
+        '#33FFF5', // Turquoise
+        '#A133FF', // Violet profond
+        '#FF8C33', // Orange chaud
+        '#33FF8C', // Vert menthe
+        '#8C33FF', // Violet électrique
+        '#FF3333', // Rouge vif
+        '#33A1FF', // Bleu ciel
+        '#57FF33', // Vert lime
+        '#F533FF', // Magenta lumineux
+        '#FFE633', // Jaune pastel
+        '#33FFE6', // Bleu aqua
+        '#E633FF', // Pourpre électrique
+        '#FF7033', // Corail
+        '#33FF70', // Vert d'eau
+        '#7033FF', // Bleu indigo
+        '#FF333F', // Rouge carmin
+        '#33D1FF', // Cyan doux
+        '#9EFF33', // Vert pomme
+        '#D133FF', // Violet saturé
+        '#FFAA33', // Orange miel
+        '#33FFA7', // Vert pastel
+        '#AA33FF', // Violet néon
+        '#FF333D', // Rouge cerise
+        '#33BAFF', // Bleu léger
+        '#B6FF33', // Vert anis
+        '#C533FF', // Violet royal
+    ];
+
     // Ne pas afficher la carte si aucun node n'est chargé
     toggleMapVisibility(nodes, segments);
 
@@ -287,8 +322,16 @@
                 console.log(layer);
                 console.log(layer.options.markerID);
                 // Fait une boucle qui augment progressivement la taille du marqueur et sa couleur
-                layer.setStyle({ color: layer.options.markerID.includes('pickup') ? '#007bff' : '#dc3545', radius: 12, fillColor: 'white' });
-                setTimeout(() => layer.setStyle({ color: '#000', radius: 8, fillColor: layer.options.markerID.includes('pickup') ? '#007bff' : '#dc3545' }), 3000);
+                layer.setStyle({
+                    color: layer.options.markerID.includes('pickup') ? '#007bff' : '#dc3545',
+                    fillColor: colors[deliveryId % colors.length],
+                    radius: 12
+                });
+                setTimeout(() => layer.setStyle({
+                    color: colors[deliveryId % colors.length],
+                    fillColor: layer.options.markerID.includes('pickup') ? '#007bff' : '#dc3545',
+                    radius: 8
+                }), 3000);
             }
         });
     }
@@ -300,65 +343,6 @@
 
         // Couleur initiale (bleu clair) et décrément
         let red = 170, green = 221, blue = 255; // Valeurs RGB pour bleu clair
-
-        // Tableau de couleurs pour les segments (bleu -> vert -> rouge -> violet -> etc.)
-        const colors = [
-            '#00ffff', // Cyan
-            '#00ff00', // Vert
-            '#ff0000', // Rouge
-            '#ff00ff', // Magenta
-            '#0000ff', // Bleu
-            '#ffff00', // Jaune
-            '#00ffff', // Cyan
-            '#00ff00', // Vert
-            '#ff0000', // Rouge
-            '#ff00ff', // Magenta
-            '#0000ff', // Bleu
-            '#ffff00', // Jaune
-            '#00ffff', // Cyan
-            '#00ff00', // Vert
-            '#ff0000', // Rouge
-            '#ff00ff', // Magenta
-            '#0000ff', // Bleu
-            '#ffff00', // Jaune
-            '#00ffff', // Cyan
-            '#00ff00', // Vert
-            '#ff0000', // Rouge
-            '#ff00ff', // Magenta
-            '#0000ff', // Bleu
-            '#ffff00', // Jaune
-            '#00ffff', // Cyan
-            '#00ff00', // Vert
-            '#ff0000', // Rouge
-            '#ff00ff', // Magenta
-            '#0000ff', // Bleu
-            '#ffff00', // Jaune
-            '#00ffff', // Cyan
-            '#00ff00', // Vert
-            '#ff0000', // Rouge
-            '#ff00ff', // Magenta
-            '#0000ff', // Bleu
-            '#ffff00', // Jaune
-            '#00ffff', // Cyan
-            '#00ff00', // Vert
-            '#ff0000', // Rouge
-            '#ff00ff', // Magenta
-            '#0000ff', // Bleu
-            '#ffff00', // Jaune
-            '#00ffff', // Cyan
-            '#00ff00', // Vert
-            '#ff0000', // Rouge
-            '#ff00ff', // Magenta
-            '#0000ff', // Bleu
-            '#ffff00', // Jaune
-            '#00ffff', // Cyan
-            '#00ff00', // Vert
-            '#ff0000', // Rouge
-            '#ff00ff', // Magenta
-            '#0000ff', // Bleu
-            '#ffff00', // Jaune
-            '#00ffff', // Cyan
-        ];
         const decrement = 0.1; // Valeur pour foncer le bleu
 
         console.log(routes);
@@ -565,8 +549,8 @@
             const deliveryNode = nodes.find(node => node.id === delivery.idDelivery);
 
             if (pickupNode && deliveryNode) {
-                addDeliveryMarker(pickupNode, 'blue', 'Pickup', delivery.id);
-                addDeliveryMarker(deliveryNode, 'orange', 'Delivery', delivery.id);
+                addDeliveryMarker(pickupNode, 'Pickup', delivery.id);
+                addDeliveryMarker(deliveryNode, 'Delivery', delivery.id);
             } else {
                 displayMessage('message', 'One or more nodes not found for this delivery. Ensure map is loaded first or is large enough to include all nodes.', false);
             }
@@ -574,11 +558,11 @@
     }
 
     // Fonction pour ajouter un marqueur de livraison
-    function addDeliveryMarker(node, color, type, deliveryId) {
+    function addDeliveryMarker(node, type, deliveryId) {
         // Add markerID to the marker
         const isPickup = type === 'Pickup';
         L.circleMarker([node.latitude, node.longitude], {
-            color: '#000', // Couleur du bord : bleu pour Pickup, rouge pour Delivery
+            color: colors[deliveryId % colors.length], // Couleur du bord
             fillColor: isPickup ? '#007bff' : '#dc3545', // Couleur de remplissage
             fillOpacity: 1, // Opacité du remplissage
             radius: isPickup ? 8 : 8, // Taille : légèrement différente pour distinguer Pickup et Delivery
