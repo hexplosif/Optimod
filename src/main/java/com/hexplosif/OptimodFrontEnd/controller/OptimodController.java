@@ -60,27 +60,28 @@ public class OptimodController {
     }
 
     @PostMapping("/loadDeliveryRequest")
-    public ResponseEntity<Map<String, Object>> loadDeliveryRequest(@RequestParam("file") MultipartFile file) {
+    public ModelAndView loadDeliveryRequest(@RequestParam("file") MultipartFile file) {
+
         try {
 
             Map<String, Object> response = optimodProxy.loadDeliveryRequest(file);
 
             response.put("nodes", optimodProxy.getAllNodes());
+            response.put("segments", optimodProxy.getAllSegments());
+            response.put("deliveryRequests", optimodProxy.getAllDeliveryRequests());
             response.put("couriers", optimodProxy.getAllCouriers());
 
             if (response.containsKey("error")) {
                 // Propager l'erreur du service en tant que réponse HTTP 500
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+                System.out.println("Error: " + response.get("error"));
+                return new ModelAndView("redirect:/").addObject("error", response.get("error"));
             }
 
-            return ResponseEntity.ok(response);
+            return new ModelAndView("redirect:/");
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of(
-                    "error", "Erreur lors du chargement de la carte.",
-                    "details", e.getMessage()
-            ));
+            return new ModelAndView("redirect:/").addObject("error", "Erreur lors du chargement de la demande de livraison.").addObject("details", e.getMessage());
         }
     }
 
