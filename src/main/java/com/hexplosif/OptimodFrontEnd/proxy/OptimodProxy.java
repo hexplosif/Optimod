@@ -619,10 +619,15 @@ public class OptimodProxy {
         String deleteCourierByIdUrl = apiUrl + "/courier/" + id;
 
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.delete(deleteCourierByIdUrl);
-
-        System.out.println("Delete courier by id called");
-        log.debug("Delete courier by id called");
+        try {
+            restTemplate.delete(deleteCourierByIdUrl);
+        } catch (HttpClientErrorException.BadRequest e) {
+            // Gestion des erreurs 400 avec le message retourné
+            throw new RuntimeException(e.getResponseBodyAsString());
+        } catch (Exception e) {
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la suppression du courier.");
+        }
     }
 
     /**

@@ -116,9 +116,16 @@ public class OptimodController {
     }
 
     @GetMapping("/deleteCourier/{id}")
-    public ModelAndView deleteCourrier(@PathVariable("id") final Long id) {
-        optimodProxy.deleteCourierById(id);
-        return new ModelAndView("redirect:/");
+    public ModelAndView deleteCourrier(@PathVariable("id") final Long id, Model model) {
+        try {
+            optimodProxy.deleteCourierById(id);
+            model.addAttribute("success", "Le coursier a été supprimé avec succès !");
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "Erreur lors de la suppression du coursier.");
+            model.addAttribute("details", e.getMessage());
+        }
+        populateModel(model);
+        return new ModelAndView("index");
     }
 
     @PostMapping("/assignCourier")
@@ -171,5 +178,12 @@ public class OptimodController {
                     "details", e.getMessage()
             ));
         }
+    }
+
+    private void populateModel(Model model) {
+        model.addAttribute("nodes", optimodProxy.getAllNodes());
+        model.addAttribute("segments", optimodProxy.getAllSegments());
+        model.addAttribute("deliveryRequests", optimodProxy.getAllDeliveryRequests());
+        model.addAttribute("couriers", optimodProxy.getAllCouriers());
     }
 }

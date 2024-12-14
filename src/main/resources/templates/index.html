@@ -63,6 +63,17 @@
                 transform: rotate(360deg);
             }
         }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Fond sombre semi-transparent */
+            display: none; /* Caché par défaut */
+            z-index: 10000; /* Sous le toast, mais au-dessus du reste du contenu */
+        }
     </style>
 </head>
 <body>
@@ -74,11 +85,24 @@
     </div>
 </nav>
 
-<div class="toast align-items-center m-3" role="alert" aria-live="assertive" aria-atomic="true" id="toast" style="position: fixed; top: 0; right: 0; z-index: 10000; background-color: whitesmoke !important;">
+<div th:if="${success}" id="successToast" class="toast align-items-center m-3 text-success border border-success bg-white" role="alert" aria-live="assertive" aria-atomic="true" style="position: absolute; top: 0; right: 0; z-index: 10000;">
     <div class="d-flex">
-        <div class="toast-body" id="message">
+        <div class="toast-body">
+            <strong th:text="${success}">Success</strong>
         </div>
         <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+</div>
+
+<div id="overlay" class="overlay"></div>
+
+<div th:if="${error}" id="errorToast" class="toast align-items-center text-white bg-danger" role="alert" aria-live="assertive" aria-atomic="true" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;">
+    <div class="toast-header">
+        <strong class="me-auto" th:text="${error}">Error</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+        <span th:text="${details}">An error occurred.</span>
     </div>
 </div>
 
@@ -217,6 +241,27 @@
 </div>
 
 <script th:inline="javascript">
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Vérifiez si le toast existe (au cas où `th:if` l'a exclu)
+        const errorToastElement = document.getElementById('errorToast');
+        const successToastElement = document.getElementById('successToast');
+        const overlay = document.getElementById('overlay');
+
+        if (errorToastElement) {
+            const toastBootstrap = new bootstrap.Toast(errorToastElement);
+            overlay.style.display = 'block';
+            toastBootstrap.show();
+            // Lorsque le toast est fermé, cacher l'overlay
+            errorToastElement.addEventListener('hidden.bs.toast', function () {
+                overlay.style.display = 'none';
+            });
+        }
+        if (successToastElement) {
+            const toastBootstrap = new bootstrap.Toast(successToastElement);
+            toastBootstrap.show();
+        }
+    });
 
     // Clé d'accès à l'API MapTiler
     const key = 'zOK6SbqRdZm2NFj4znLb';
