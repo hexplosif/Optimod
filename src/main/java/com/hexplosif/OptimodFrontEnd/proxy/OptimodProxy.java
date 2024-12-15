@@ -38,7 +38,7 @@ public class OptimodProxy {
      * @param file The file to load
      * @return The response from the API
      */
-    public Map<String, Object> loadMap(MultipartFile file) {
+    public void loadMap(MultipartFile file) {
         String apiUrl = customProperties.getApiUrl();
         String loadMapUrl = apiUrl + "/loadMap";
 
@@ -66,28 +66,21 @@ public class OptimodProxy {
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<Map> response = restTemplate.exchange(
+            // Envoyer la requête POST
+            restTemplate.exchange(
                     loadMapUrl,
                     HttpMethod.POST,
                     requestEntity,
-                    Map.class
+                    Void.class
             );
 
-            return response.getBody();
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             // Extraire le corps de la réponse d'erreur
-            String responseBody = e.getResponseBodyAsString();
-            log.error("Server responded with error: " + responseBody);
+            log.error("Server responded with error: " + e.getResponseBodyAsString());
 
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                // Convertir la réponse JSON d'erreur en Map
-                return mapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
-            } catch (JsonProcessingException jsonException) {
-                throw new RuntimeException("Failed to parse error response: " + responseBody);
-            }
+            throw new RuntimeException(e.getResponseBodyAsString());
         } catch (Exception e) {
-            log.error("Unexpected error during load map: ", e);
+            log.error("Unexpected error during load map: ", e.getMessage());
             throw new RuntimeException("Unexpected error occurred: " + e.getMessage());
         }
     }
@@ -97,13 +90,12 @@ public class OptimodProxy {
      * @param file The file to load
      * @return The response from the API
      */
-    public Map<String, Object> loadDeliveryRequest(MultipartFile file) {
+    public void loadDeliveryRequest(MultipartFile file) {
 
         String apiUrl = customProperties.getApiUrl();
         String loadDeliveryRequestUrl = apiUrl + "/loadDeliveryRequest";
 
         RestTemplate restTemplate = new RestTemplate();
-
 
         // Convertir le fichier en ByteArrayResource
         ByteArrayResource fileAsResource;
@@ -128,29 +120,20 @@ public class OptimodProxy {
 
         try {
             // Envoyer la requête POST
-            ResponseEntity<Map> response = restTemplate.exchange(
+            restTemplate.exchange(
                     loadDeliveryRequestUrl,
                     HttpMethod.POST,
                     requestEntity,
-                    Map.class
+                    Void.class
             );
-
-            return response.getBody();
 
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             // Extraire le corps de la réponse d'erreur
-            String responseBody = e.getResponseBodyAsString();
-            log.error("Server responded with error: " + responseBody);
+            log.error("Server responded with error: " + e.getResponseBodyAsString());
 
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                // Convertir la réponse JSON d'erreur en Map
-                return mapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
-            } catch (JsonProcessingException jsonException) {
-                throw new RuntimeException("Failed to parse error response: " + responseBody);
-            }
+            throw new RuntimeException(e.getResponseBodyAsString());
         } catch (Exception e) {
-            log.error("Unexpected error during load delivery request: ", e);
+            log.error("Unexpected error during load delivery request: ", e.getMessage());
             throw new RuntimeException("Unexpected error occurred: " + e.getMessage());
         }
     }
@@ -439,17 +422,23 @@ public class OptimodProxy {
         String getAllDeliveryRequestsUrl = apiUrl + "/delivery_requests";
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Iterable<DeliveryRequest>> response = restTemplate.exchange(
-                getAllDeliveryRequestsUrl,
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<Iterable<DeliveryRequest>>() {
-                }
-        );
 
-        log.debug("Get all delivery_requests called with response: " + response.toString());
-
-        return response.getBody();
+        try {
+            ResponseEntity<Iterable<DeliveryRequest>> response = restTemplate.exchange(
+                    getAllDeliveryRequestsUrl,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<Iterable<DeliveryRequest>>() {
+                    }
+            );
+            return response.getBody();
+        } catch (HttpClientErrorException.NotFound e) {
+            // Gestion des erreurs 404 avec le message retourné
+            throw new RuntimeException("Aucune demande de livraison n'a été trouvée.");
+        } catch (Exception e) {
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la récupération des demandes de livraison.");
+        }
     }
 
     /**
@@ -462,16 +451,22 @@ public class OptimodProxy {
         String getDeliveryRequestByIdUrl = apiUrl + "/delivery_request/" + id;
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<DeliveryRequest> response = restTemplate.exchange(
-                getDeliveryRequestByIdUrl,
-                HttpMethod.GET,
-                null,
-                DeliveryRequest.class
-        );
 
-        log.debug("Get delivery_request by id called with response: " + response.toString());
-
-        return response.getBody();
+        try {
+            ResponseEntity<DeliveryRequest> response = restTemplate.exchange(
+                    getDeliveryRequestByIdUrl,
+                    HttpMethod.GET,
+                    null,
+                    DeliveryRequest.class
+            );
+            return response.getBody();
+        } catch (HttpClientErrorException.NotFound e) {
+            // Gestion des erreurs 404 avec le message retourné
+            throw new RuntimeException("La demande de livraison n'existe pas.");
+        } catch (Exception e) {
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la récupération de la demande de livraison.");
+        }
     }
 
     /**
@@ -485,15 +480,22 @@ public class OptimodProxy {
 
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<DeliveryRequest> request = new HttpEntity<DeliveryRequest>(delivery_request);
-        ResponseEntity<DeliveryRequest> response = restTemplate.postForEntity(
-                createDeliveryRequestUrl,
-                request,
-                DeliveryRequest.class
-        );
 
-        log.debug("Create delivery_request called with response: " + response.toString());
-
-        return response.getBody();
+        try {
+            ResponseEntity<DeliveryRequest> response = restTemplate.exchange(
+                    createDeliveryRequestUrl,
+                    HttpMethod.POST,
+                    request,
+                    DeliveryRequest.class
+            );
+            return response.getBody();
+        } catch (HttpClientErrorException.BadRequest e) {
+            // Gestion des erreurs 400 avec le message retourné
+            throw new RuntimeException(e.getResponseBodyAsString());
+        } catch (Exception e) {
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la création de la demande de livraison.");
+        }
     }
 
     /**
@@ -505,10 +507,16 @@ public class OptimodProxy {
         String deleteDeliveryRequestByIdUrl = apiUrl + "/delivery_request/" + id;
 
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.delete(deleteDeliveryRequestByIdUrl);
 
-        System.out.println("Delete delivery_request by id called");
-        log.debug("Delete delivery_request by id called");
+        try {
+            restTemplate.delete(deleteDeliveryRequestByIdUrl);
+        } catch (HttpClientErrorException.BadRequest e) {
+            // Gestion des erreurs 400 avec le message retourné
+            throw new RuntimeException(e.getResponseBodyAsString());
+        } catch (Exception e) {
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la suppression de la demande de livraison.");
+        }
     }
 
     /**
@@ -522,16 +530,22 @@ public class OptimodProxy {
 
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<DeliveryRequest> request = new HttpEntity<DeliveryRequest>(delivery_request);
-        ResponseEntity<DeliveryRequest> response = restTemplate.exchange(
-                saveDeliveryRequestUrl,
-                HttpMethod.PUT,
-                request,
-                DeliveryRequest.class
-        );
 
-        log.debug("Save delivery_request called with response: " + response.toString());
-
-        return response.getBody();
+        try {
+            ResponseEntity<DeliveryRequest> response = restTemplate.exchange(
+                    saveDeliveryRequestUrl,
+                    HttpMethod.PUT,
+                    request,
+                    DeliveryRequest.class
+            );
+            return response.getBody();
+        } catch (HttpClientErrorException.BadRequest e) {
+            // Gestion des erreurs 400 avec le message retourné
+            throw new RuntimeException(e.getResponseBodyAsString());
+        } catch (Exception e) {
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la sauvegarde de la demande de livraison.");
+        }
     }
 
     public void deleteAllDeliveryRequests() {
@@ -539,9 +553,16 @@ public class OptimodProxy {
         String deleteAllDeliveryRequestsUrl = apiUrl + "/delivery_requests";
 
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.delete(deleteAllDeliveryRequestsUrl);
 
-        log.debug("Delete all delivery_requests called");
+        try {
+            restTemplate.delete(deleteAllDeliveryRequestsUrl);
+        } catch (HttpClientErrorException.BadRequest e) {
+            // Gestion des erreurs 400 avec le message retourné
+            throw new RuntimeException(e.getResponseBodyAsString());
+        } catch (Exception e) {
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la suppression des demandes de livraison.");
+        }
     }
 
     /**
@@ -553,17 +574,23 @@ public class OptimodProxy {
         String getAllCouriersUrl = apiUrl + "/couriers";
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Iterable<Courier>> response = restTemplate.exchange(
-                getAllCouriersUrl,
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<Iterable<Courier>>() {
-                }
-        );
 
-        log.debug("Get all delivery_requests called with response: " + response.toString());
-
-        return response.getBody();
+        try {
+            ResponseEntity<Iterable<Courier>> response = restTemplate.exchange(
+                    getAllCouriersUrl,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<Iterable<Courier>>() {
+                    }
+            );
+            return response.getBody();
+        } catch (HttpClientErrorException.NotFound e) {
+            // Gestion des erreurs 404 avec le message retourné
+            throw new RuntimeException("Aucun coursier n'a été trouvé.");
+        } catch (Exception e) {
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la récupération des coursiers.");
+        }
     }
 
     /**
@@ -576,16 +603,22 @@ public class OptimodProxy {
         String getCourierByIdUrl = apiUrl + "/courier/" + id;
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Courier> response = restTemplate.exchange(
-                getCourierByIdUrl,
-                HttpMethod.GET,
-                null,
-                Courier.class
-        );
 
-        log.debug("Get courier by id called with response: " + response.toString());
-
-        return response.getBody();
+        try {
+            ResponseEntity<Courier> response = restTemplate.exchange(
+                    getCourierByIdUrl,
+                    HttpMethod.GET,
+                    null,
+                    Courier.class
+            );
+            return response.getBody();
+        } catch (HttpClientErrorException.NotFound e) {
+            // Gestion des erreurs 404 avec le message retourné
+            throw new RuntimeException("Le coursier n'existe pas.");
+        } catch (Exception e) {
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la récupération du coursier.");
+        }
     }
 
     /**
@@ -599,15 +632,22 @@ public class OptimodProxy {
 
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<Courier> request = new HttpEntity<Courier>(courier);
-        ResponseEntity<Courier> response = restTemplate.postForEntity(
-                createCourierUrl,
-                request,
-                Courier.class
-        );
 
-        log.debug("Create courier called with response: " + response.toString());
-
-        return response.getBody();
+        try {
+            ResponseEntity<Courier> response = restTemplate.exchange(
+                    createCourierUrl,
+                    HttpMethod.POST,
+                    request,
+                    Courier.class
+            );
+            return response.getBody();
+        } catch (HttpClientErrorException.BadRequest e) {
+            // Gestion des erreurs 400 avec le message retourné
+            throw new RuntimeException(e.getResponseBodyAsString());
+        } catch (Exception e) {
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la création du courier.");
+        }
     }
 
     /**
@@ -641,16 +681,23 @@ public class OptimodProxy {
 
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<Courier> request = new HttpEntity<Courier>(courier);
-        ResponseEntity<Courier> response = restTemplate.exchange(
-                saveCourierUrl,
-                HttpMethod.PUT,
-                request,
-                Courier.class
-        );
 
-        log.debug("Save courier called with response: " + response.toString());
+        try {
+            ResponseEntity<Courier> response = restTemplate.exchange(
+                    saveCourierUrl,
+                    HttpMethod.PUT,
+                    request,
+                    Courier.class
+            );
+            return response.getBody();
 
-        return response.getBody();
+        } catch (HttpClientErrorException.BadRequest e) {
+            // Gestion des erreurs 400 avec le message retourné
+            throw new RuntimeException(e.getResponseBodyAsString());
+        } catch (Exception e) {
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la sauvegarde du courier.");
+        }
     }
 
     public void deleteAllCouriers() {
@@ -658,80 +705,54 @@ public class OptimodProxy {
         String deleteAllCouriersUrl = apiUrl + "/couriers";
 
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.delete(deleteAllCouriersUrl);
 
-        log.debug("Delete all couriers called");
+        try {
+            restTemplate.delete(deleteAllCouriersUrl);
+        } catch (HttpClientErrorException.BadRequest e) {
+            // Gestion des erreurs 400 avec le message retourné
+            throw new RuntimeException(e.getResponseBodyAsString());
+        } catch (Exception e) {
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la suppression du courier.");
+        }
     }
 
-    public Map<String, Object> addCourier() {
+    public void addCourier() {
         String apiUrl = customProperties.getApiUrl();
         String addCourierUrl = apiUrl + "/addCourier";
 
         RestTemplate restTemplate = new RestTemplate();
 
         try {
-            // Envoi de la requête POST avec JSON
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    addCourierUrl,
-                    HttpMethod.POST,
-                    null,
-                    Map.class
-            );
-
-            return response.getBody();
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
-            // Extraire le corps de la réponse d'erreur
-            String responseBody = e.getResponseBodyAsString();
-            log.error("Server responded with error: " + responseBody);
-
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                // Convertir la réponse JSON d'erreur en Map
-                return mapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
-            } catch (JsonProcessingException jsonException) {
-                throw new RuntimeException("Failed to parse error response: " + responseBody);
-            }
+            restTemplate.postForEntity(addCourierUrl, null, Void.class);
+        } catch (HttpClientErrorException.BadRequest e) {
+            // Gestion des erreurs 400 avec le message retourné
+            throw new RuntimeException(e.getResponseBodyAsString());
         } catch (Exception e) {
-            log.error("Unexpected error during adding courier: ", e);
-            throw new RuntimeException("Unexpected error occurred: " + e.getMessage());
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de l'ajout du courier.");
         }
+
     }
 
-    public Map<String, Object> deleteCourier() {
+    public void deleteCourier() {
         String apiUrl = customProperties.getApiUrl();
         String deleteCourierUrl = apiUrl + "/deleteCourier";
 
         RestTemplate restTemplate = new RestTemplate();
 
         try {
-            // Envoi de la requête DELETE avec JSON
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    deleteCourierUrl,
-                    HttpMethod.DELETE,
-                    null,
-                    Map.class
-            );
-
-            return response.getBody();
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
-            // Extraire le corps de la réponse d'erreur
-            String responseBody = e.getResponseBodyAsString();
-            log.error("Server responded with error: " + responseBody);
-
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                // Convertir la réponse JSON d'erreur en Map
-                return mapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
-            } catch (JsonProcessingException jsonException) {
-                throw new RuntimeException("Failed to parse error response: " + responseBody);
-            }
+            restTemplate.delete(deleteCourierUrl);
+        } catch (HttpClientErrorException.BadRequest e) {
+            // Gestion des erreurs 400 avec le message retourné
+            throw new RuntimeException(e.getResponseBodyAsString());
         } catch (Exception e) {
-            log.error("Unexpected error during adding courier: ", e);
-            throw new RuntimeException("Unexpected error occurred: " + e.getMessage());
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la suppression du courier.");
         }
     }
 
-    public Map<String, Object> assignCourier(Long courierId, Long deliveryRequestId) {
+    public void assignCourier(Long courierId, Long deliveryRequestId) {
         String apiUrl = customProperties.getApiUrl();
         String assignCourierUrl = apiUrl + "/assignCourier";
 
@@ -748,30 +769,18 @@ public class OptimodProxy {
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
         try {
-            // Envoi de la requête PUT avec JSON
-            ResponseEntity<Map> response = restTemplate.exchange(
+            restTemplate.exchange(
                     assignCourierUrl,
                     HttpMethod.PUT,
                     requestEntity,
-                    Map.class
+                    Void.class
             );
-
-            return response.getBody();
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
-            // Extraire le corps de la réponse d'erreur
-            String responseBody = e.getResponseBodyAsString();
-            log.error("Server responded with error: " + responseBody);
-
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                // Convertir la réponse JSON d'erreur en Map
-                return mapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
-            } catch (JsonProcessingException jsonException) {
-                throw new RuntimeException("Failed to parse error response: " + responseBody);
-            }
+        } catch (HttpClientErrorException.BadRequest e) {
+            // Gestion des erreurs 400 avec le message retourné
+            throw new RuntimeException(e.getResponseBodyAsString());
         } catch (Exception e) {
-            log.error("Unexpected error during assign courier: ", e);
-            throw new RuntimeException("Unexpected error occurred: " + e.getMessage());
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de l'assignation du courier.");
         }
     }
 
@@ -795,19 +804,11 @@ public class OptimodProxy {
 
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             // Extraire le corps de la réponse d'erreur
-            String responseBody = e.getResponseBodyAsString();
-            log.error("Server responded with error: " + responseBody);
+            log.error("Server responded with error: " + e.getResponseBodyAsString());
 
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                // Convertir la réponse JSON d'erreur en Map
-                Map<String, Object> errorResponse = mapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
-                throw new RuntimeException("Failed to calculate optimal route: " + errorResponse.get("error"));
-            } catch (JsonProcessingException jsonException) {
-                throw new RuntimeException("Failed to parse error response: " + responseBody);
-            }
+            throw new RuntimeException(e.getResponseBodyAsString());
         } catch (Exception e) {
-            log.error("Unexpected error during calculate optimal route: ", e);
+            log.error("Unexpected error during calculate optimal route: ", e.getMessage());
             throw new RuntimeException("Unexpected error occurred: " + e.getMessage());
         }
     }

@@ -124,9 +124,9 @@
     </div>
 
     <div id="buttonContainer" class="container d-flex mt-3">
-        <form id="loadMapForm" enctype="multipart/form-data" class="me-2">
-                <label for="mapFile" class="btn btn-primary">Upload a map</label>
-                <input type="file" class="btn btn-primary form-control-file" id="mapFile" name="file" accept=".xml" onchange="uploadMap('/loadMap', 'loadMapForm')" style="display: none">
+        <form id="loadMapForm" enctype="multipart/form-data" class="me-2" th:action="@{/loadMap}" method="post">
+            <label for="mapFile" class="btn btn-primary">Upload a map</label>
+            <input type="file" class="btn btn-primary form-control-file" id="mapFile" name="file" accept=".xml" onchange="this.form.submit()" style="display: none">
         </form>
         <form id="loadDeliveryRequestForm" enctype="multipart/form-data" class="me-2" th:action="@{/loadDeliveryRequest}" method="post">
             <label for="deliveryFiles" class="btn btn-primary">Upload delivery requests</label>
@@ -137,7 +137,7 @@
 
         <a th:href="@{/deleteAllDeliveryRequests}" class="me-2"><button class="btn btn-danger">Remove all deliveries</button></a>
 
-        <button onclick="calculateOptimalRoute()" class="btn btn-primary me-2">Compute optimal tour</button>
+        <a th:href="@{/calculateOptimalRoute}" class="me-2"><button class="btn btn-primary">Calculate optimal route</button></a>
 
     </div>
 
@@ -187,17 +187,31 @@
                     <td><span th:text="${delivery.idDelivery}"> Delivery </span></td>
                     <td><span th:text="${delivery.idWarehouse}"> Warehouse </span></td>
                     <td>
-                        <form id="assignCourierForm">
-                            <input type="hidden" th:name="'deliveryRequest-' + ${delivery.id}" th:value="${delivery.id}">
-                            <div>
-                                <select class="form-select" name="courierId" th:id="'courierSelect-' + ${delivery.id}" required th:onchange="'assignCourier(' + ${delivery.id} + ')'">
-                                    <option th:if="${delivery.idCourier}" th:value="${delivery.idCourier}" th:text="${delivery.idCourier}"></option>
-                                    <option th:if="${delivery.idCourier == null}" value="">Sélectionner un livreur</option>
+                        <form th:action="@{/assignCourier}" method="post"
+                              th:id="'assignCourierForm-' + ${delivery.id}">
+                            <input type="hidden" name="deliveryRequestId" th:value="${delivery.id}" />
 
-                                    <!-- On affiche les livreurs disponibles hors celui déjà assigné -->
-                                    <option th:each="courier: ${couriers}" th:if="${courier.id != delivery.idCourier}" th:value="${courier.id}" th:text="${courier.name}"></option>
-                                </select>
-                            </div>
+                            <select class="form-select" name="courierId"
+                                    th:id="'courierSelect-' + ${delivery.id}"
+                                    th:onchange="this.form.submit()">
+                                <!-- Option déjà assignée si existante -->
+                                <option th:if="${delivery.idCourier != null}"
+                                        th:value="${delivery.idCourier}"
+                                        th:text="'Courier ' + ${delivery.idCourier}">
+                                </option>
+
+                                <!-- Option par défaut si aucun livreur n'est assigné -->
+                                <option th:if="${delivery.idCourier == null}"
+                                        value="">Sélectionner un livreur
+                                </option>
+
+                                <!-- Liste des livreurs disponibles sauf le coursier déjà assigné -->
+                                <option th:each="courier : ${couriers}"
+                                        th:if="${courier.id != delivery.idCourier}"
+                                        th:value="${courier.id}"
+                                        th:text="'Courier ' + ${courier.id}">
+                                </option>
+                            </select>
                         </form>
                     </td>
                     <td>
@@ -279,6 +293,7 @@
     var segments = /*[[${segments}]]*/ [];
     var deliveryRequests = /*[[${deliveryRequests}]]*/ [];
     var couriers = /*[[${couriers}]]*/ [];
+    var optimalRoutes = /*[[${optimalRoutes}]]*/ [];
 
     // Tableau de couleurs pour les segments (bleu -> vert -> rouge -> violet -> etc.)
     const colors = [
@@ -322,7 +337,10 @@
     if (nodes.length > 0 && segments.length > 0) {
         updateMap(nodes, segments);
         if (deliveryRequests.length > 0) {
-            updateDeliveries(nodes, deliveryRequests, couriers);
+            updateDeliveries(nodes, deliveryRequests, couriers)
+            if (optimalRoutes && optimalRoutes.length > 0) {
+                displayOptimalRoute(optimalRoutes, nodes);
+            }
         }
     }
 
@@ -459,15 +477,10 @@
             .then(data => {
 
                 if (data.error) {
-                    displayMessage('message', data.error, false);
                     return;
                 }
 
-                displayMessage('message', 'Route calculée avec succès !', true);
                 displayOptimalRoute(data.routes, data.nodes);
-            })
-            .catch(() => {
-                displayMessage('message', 'Erreur innatendue lors du calcul de la route.', false);
             });
     }
 
@@ -477,7 +490,7 @@
         const selectedCourierId = courierSelect.value;
 
         if (!selectedCourierId) {
-            displayMessage('message', 'Veuillez sélectionner un livreur.', false);
+            //displayMessage('message', 'Veuillez sélectionner un livreur.', false);
             return;
         }
 
@@ -494,16 +507,9 @@
         })
             .then(response => response.json()) // S'assurer que la réponse est en JSON
             .then(data => {
-                if (data.error) {
-                    displayMessage('message', data.error, false);
-                } else {
-                    displayMessage('message', 'Livreur assigné avec succès !', true);
-
+                if (!data.error) {
                     updateDeliveries(data.nodes, data.deliveryRequests, data.couriers);
                 }
-            })
-            .catch(() => {
-                displayMessage('message', 'Erreur lors de l\'assignation du livreur.', false);
             });
     }
 
@@ -523,18 +529,6 @@
             mapElement.style.display = 'block';
             welcomeElement.style.display = 'none';
         }
-    }
-
-    // Fonction pour afficher un message dans un élément spécifié
-    function displayMessage(elementId, message, isSuccess = true) {
-        const toastElement = document.getElementById('toast');
-        toastElement.classList.remove('text-success', 'text-danger', 'border-success', 'border-danger');
-        toastElement.classList.add(isSuccess ? 'text-success' : 'text-danger');
-        toastElement.classList.add(isSuccess ? 'border-success' : 'border-danger');
-        const messageElement = document.getElementById(elementId);
-        messageElement.innerHTML = message;
-        var toast = new bootstrap.Toast(toastElement);
-        toast.show();
     }
 
     // Fonction pour mettre à jour la carte avec les nouveaux segments
@@ -583,7 +577,7 @@
                     radius: 10 // Rayon du cercle
                 }).addTo(map).bindPopup(`<strong>Warehouse</strong><br/>${warehouseNode.latitude}, ${warehouseNode.longitude}`);
             } else {
-                displayMessage('message', 'Warehouse node not found. Ensure map is loaded first or is large enough to include all nodes.', false);
+                //displayMessage('message', 'Warehouse node not found. Ensure map is loaded first or is large enough to include all nodes.', false);
                 return;
             }
         }
@@ -597,7 +591,7 @@
                 addDeliveryMarker(pickupNode, 'Pickup', delivery.id);
                 addDeliveryMarker(deliveryNode, 'Delivery', delivery.id);
             } else {
-                displayMessage('message', 'One or more nodes not found for this delivery. Ensure map is loaded first or is large enough to include all nodes.', false);
+                //displayMessage('message', 'One or more nodes not found for this delivery. Ensure map is loaded first or is large enough to include all nodes.', false);
             }
         });
     }
@@ -634,11 +628,7 @@
                 return response.json();
             })
             .then(data => {
-                displayMessage('message', 'Fichier chargé avec succès !', true);
                 updateMap(data.nodes, data.segments);
-            })
-            .catch(error => {
-                displayMessage('message', `Error while loading the map: ${error}`, false);
             })
             .finally(() => {
                 toggleLoading(false);

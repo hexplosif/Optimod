@@ -24,104 +24,109 @@ public class OptimodController {
     private OptimodProxy optimodProxy;
 
     @GetMapping("/")
-    public String home(Model model) {
-        Iterable<Node> listNode = optimodProxy.getAllNodes();
-        Iterable<Segment> listSegment = optimodProxy.getAllSegments();
-        Iterable<DeliveryRequest> listDeliveryRequest = optimodProxy.getAllDeliveryRequests();
-        Iterable<Courier> listCourier = optimodProxy.getAllCouriers();
-        model.addAttribute("nodes", listNode);
-        model.addAttribute("segments", listSegment);
-        model.addAttribute("deliveryRequests", listDeliveryRequest);
-        model.addAttribute("couriers", listCourier);
-        return "index";
+    public ModelAndView home(Model model) {
+        populateModel(model);
+        return new ModelAndView("index");
     }
 
     @PostMapping("/loadMap")
-    public ResponseEntity<Map<String, Object>> loadMap(@RequestParam("file") MultipartFile file) {
+    public ModelAndView loadMap(@RequestParam("file") MultipartFile file, Model model) {
         try {
-
-            Map<String, Object> response = optimodProxy.loadMap(file);
-
-            if (response.containsKey("error")) {
-                // Propager l'erreur du service en tant que réponse HTTP 500
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-            }
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error: " + e.getMessage());
-            return ResponseEntity.status(500).body(Map.of(
-                    "error", "Erreur lors du chargement de la carte.",
-                    "details", e.getMessage()
-            ));
+            optimodProxy.loadMap(file);
+            model.addAttribute("success", "The map has been successfully loaded !");
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "Error while loading the map");
+            model.addAttribute("details", e.getMessage());
         }
+        populateModel(model);
+        return new ModelAndView("index");
     }
 
     @PostMapping("/loadDeliveryRequest")
-    public ModelAndView loadDeliveryRequest(@RequestParam("file") MultipartFile file) {
-
+    public ModelAndView loadDeliveryRequest(@RequestParam("file") MultipartFile file, Model model) {
         try {
-
-            Map<String, Object> response = optimodProxy.loadDeliveryRequest(file);
-
-            response.put("nodes", optimodProxy.getAllNodes());
-            response.put("segments", optimodProxy.getAllSegments());
-            response.put("deliveryRequests", optimodProxy.getAllDeliveryRequests());
-            response.put("couriers", optimodProxy.getAllCouriers());
-
-            if (response.containsKey("error")) {
-                // Propager l'erreur du service en tant que réponse HTTP 500
-                System.out.println("Error: " + response.get("error"));
-                return new ModelAndView("redirect:/").addObject("error", response.get("error"));
-            }
-
-            return new ModelAndView("redirect:/");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ModelAndView("redirect:/").addObject("error", "Erreur lors du chargement de la demande de livraison.").addObject("details", e.getMessage());
+            optimodProxy.loadDeliveryRequest(file);
+            model.addAttribute("success", "The delivery request(s) has been successfully loaded !");
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "Error while loading the delivery request(s)");
+            model.addAttribute("details", e.getMessage());
         }
+        populateModel(model);
+        return new ModelAndView("index");
     }
 
     @GetMapping("/deleteAllNodes")
-    public ModelAndView deleteAllNodes() {
-        optimodProxy.deleteAllNodes();
-        return new ModelAndView("redirect:/");
+    public ModelAndView deleteAllNodes(Model model) {
+        try {
+            optimodProxy.deleteAllNodes();
+            model.addAttribute("success", "The nodes have been successfully deleted !");
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "Error while deleting the nodes");
+            model.addAttribute("details", e.getMessage());
+        }
+        populateModel(model);
+        return new ModelAndView("index");
     }
 
     @GetMapping("/deleteDeliveryRequest/{id}")
-    public ModelAndView deleteDeliveryRequest(@PathVariable("id") final Long id) {
-        optimodProxy.deleteDeliveryRequestById(id);
-        return new ModelAndView("redirect:/");
+    public ModelAndView deleteDeliveryRequest(@PathVariable("id") final Long id, Model model) {
+        try {
+            optimodProxy.deleteDeliveryRequestById(id);
+            model.addAttribute("success", "The delivery request has been successfully deleted !");
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "Error while deleting the delivery request");
+            model.addAttribute("details", e.getMessage());
+        }
+        populateModel(model);
+        return new ModelAndView("index");
     }
 
     @GetMapping("/deleteAllDeliveryRequests")
-    public ModelAndView deleteAllDeliveryRequests() {
-        optimodProxy.deleteAllDeliveryRequests();
-        return new ModelAndView("redirect:/");
+    public ModelAndView deleteAllDeliveryRequests(Model model) {
+        try {
+            optimodProxy.deleteAllDeliveryRequests();
+            model.addAttribute("success", "The delivery requests have been successfully deleted !");
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "Error while deleting the delivery requests");
+            model.addAttribute("details", e.getMessage());
+        }
+        populateModel(model);
+        return new ModelAndView("index");
     }
 
     @GetMapping("/addCourier")
     public ModelAndView addCourrier(Model model) {
-        optimodProxy.addCourier();
-        return new ModelAndView("redirect:/");
+        try {
+            optimodProxy.addCourier();
+            model.addAttribute("success", "The courier has been successfully added !");
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "Error while adding the courier");
+            model.addAttribute("details", e.getMessage());
+        }
+        populateModel(model);
+        return new ModelAndView("index");
     }
 
     @GetMapping("/deleteCourier")
     public ModelAndView deleteCourrier(Model model) {
-        optimodProxy.deleteCourier();
-        return new ModelAndView("redirect:/");
+        try {
+            optimodProxy.deleteCourier();
+            model.addAttribute("success", "The courier has been successfully deleted !");
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "Error while deleting the courier");
+            model.addAttribute("details", e.getMessage());
+        }
+        populateModel(model);
+        return new ModelAndView("index");
     }
 
     @GetMapping("/deleteCourier/{id}")
     public ModelAndView deleteCourrier(@PathVariable("id") final Long id, Model model) {
         try {
             optimodProxy.deleteCourierById(id);
-            model.addAttribute("success", "Le coursier a été supprimé avec succès !");
+            model.addAttribute("success", "The courier has been successfully deleted !");
         } catch (RuntimeException e) {
-            model.addAttribute("error", "Erreur lors de la suppression du coursier.");
+            model.addAttribute("error", "Error while deleting the courier");
             model.addAttribute("details", e.getMessage());
         }
         populateModel(model);
@@ -129,55 +134,30 @@ public class OptimodController {
     }
 
     @PostMapping("/assignCourier")
-    public ResponseEntity<Map<String, Object>> assignCourier(@RequestParam("courierId") Long courierId, @RequestParam("deliveryRequestId") Long deliveryRequestId) {
+    public ModelAndView assignCourier(@RequestParam("courierId") Long courierId, @RequestParam("deliveryRequestId") Long deliveryRequestId, Model model) {
         try {
-            Map<String, Object> response = optimodProxy.assignCourier(courierId, deliveryRequestId);
-
-            if (response.containsKey("error")) {
-                // Propager l'erreur du service en tant que réponse HTTP 500
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-            }
-
-            response.put("nodes", optimodProxy.getAllNodes());
-            response.put("couriers", optimodProxy.getAllCouriers());
-            response.put("deliveryRequests", optimodProxy.getAllDeliveryRequests());
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of(
-                    "error", "Erreur lors de l'assignation du coursier.",
-                    "details", e.getMessage()
-            ));
+            optimodProxy.assignCourier(courierId, deliveryRequestId);
+            model.addAttribute("success", "The courier has been successfully assigned to the delivery request !");
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "Error while assigning courier to delivery request");
+            model.addAttribute("details", e.getMessage());
         }
+        populateModel(model);
+        return new ModelAndView("index");
     }
 
     @GetMapping("/calculateOptimalRoute")
-    public ResponseEntity<Map<String, Object>> calculateOptimalRoute() {
+    public ModelAndView calculateOptimalRoute(Model model) {
         try {
-            List<List<Long>> routes = optimodProxy.calculateOptimalRoute();
-
-            if (routes == null) {
-                return ResponseEntity.status(500).body(Map.of(
-                    "error", "Erreur lors du calcul de la route optimale."
-                ));
-            }
-
-            Map<String, Object> response = Map.of(
-                    "routes", routes,
-                    "nodes", optimodProxy.getAllNodes()
-            );
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of(
-                    "error", "Erreur lors du calcul de la route optimale.",
-                    "details", e.getMessage()
-            ));
+            List<List<Long>> optimalRoutes = optimodProxy.calculateOptimalRoute();
+            model.addAttribute("success", "The optimal route has been calculated successfully !");
+            model.addAttribute("optimalRoutes", optimalRoutes);
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "Error while calculating the optimal route");
+            model.addAttribute("details", e.getMessage());
         }
+        populateModel(model);
+        return new ModelAndView("index");
     }
 
     private void populateModel(Model model) {
