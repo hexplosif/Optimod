@@ -19,6 +19,10 @@
     <title>Optimod</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
         body {
             padding-top: 50px;
         }
@@ -27,7 +31,7 @@
             text-align: center;
         }
         #map {
-            height: 400px;
+            height: 500px;
             position: relative;
         }
 
@@ -74,6 +78,11 @@
             display: none; /* Caché par défaut */
             z-index: 10000; /* Sous le toast, mais au-dessus du reste du contenu */
         }
+
+        .card:hover {
+            cursor: pointer;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -85,7 +94,7 @@
     </div>
 </nav>
 
-<div th:if="${success}" id="successToast" class="toast align-items-center m-3 text-success border border-success bg-white" role="alert" aria-live="assertive" aria-atomic="true" style="position: absolute; top: 0; right: 0; z-index: 10000;">
+<div th:if="${success}" id="successToast" class="toast align-items-center m-3 text-success border border-success bg-white" role="alert" aria-live="assertive" aria-atomic="true" style="position: fixed; top: 0; right: 0; z-index: 10000;">
     <div class="d-flex">
         <div class="toast-body">
             <strong th:text="${success}">Success</strong>
@@ -96,7 +105,7 @@
 
 <div id="overlay" class="overlay"></div>
 
-<div th:if="${error}" id="errorToast" class="toast align-items-center text-white bg-danger" role="alert" aria-live="assertive" aria-atomic="true" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;">
+<div th:if="${error}" id="errorToast" class="toast align-items-center text-white bg-danger" role="alert" aria-live="assertive" aria-atomic="true" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;">
     <div class="toast-header">
         <strong class="me-auto" th:text="${error}">Error</strong>
         <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -106,7 +115,7 @@
     </div>
 </div>
 
-<div class="container py-3">
+<div class="container-fluid py-3">
 
     <div class="p-5 mt-3 bg-body-tertiary rounded-3 border" id="welcome">
         <div class="container-fluid">
@@ -123,72 +132,58 @@
         <div class="spinner-border"></div>
     </div>
 
-    <div id="buttonContainer" class="container d-flex mt-3">
-        <form id="loadMapForm" enctype="multipart/form-data" class="me-2" th:action="@{/loadMap}" method="post">
+    <div id="buttonContainer" class="d-flex justify-content-center align-items-end gap-3">
+        <form id="loadMapForm" enctype="multipart/form-data" th:action="@{/loadMap}" method="post">
             <label for="mapFile" class="btn btn-primary">Upload a map</label>
-            <input type="file" class="btn btn-primary form-control-file" id="mapFile" name="file" accept=".xml" onchange="this.form.submit()" style="display: none">
+            <input type="file" class="btn btn-primary form-control-file" id="mapFile" name="file" accept=".xml" onchange="this.form.submit(); toggleLoading(true)" style="display: none">
         </form>
-        <form id="loadDeliveryRequestForm" enctype="multipart/form-data" class="me-2" th:action="@{/loadDeliveryRequest}" method="post">
+        <form id="loadDeliveryRequestForm" enctype="multipart/form-data" th:action="@{/loadDeliveryRequest}" method="post">
             <label for="deliveryFiles" class="btn btn-primary">Upload delivery requests</label>
-            <input type="file" class="btn btn-primary form-control-file" id="deliveryFiles" name="file" accept=".xml" style="display: none" onchange="this.form.submit()" multiple>
+            <input type="file" class="btn btn-primary form-control-file" id="deliveryFiles" name="file" accept=".xml" style="display: none" onchange="this.form.submit(); toggleLoading(true)" multiple>
         </form>
 
-        <a th:href="@{/deleteAllNodes}" class="me-2"><button class="btn btn-danger">Remove map</button></a>
+        <a th:href="@{/deleteAllNodes}"><button class="btn btn-danger">Remove map</button></a>
 
-        <a th:href="@{/deleteAllDeliveryRequests}" class="me-2"><button class="btn btn-danger">Remove all deliveries</button></a>
+        <a th:href="@{/deleteAllDeliveryRequests}"><button class="btn btn-danger">Remove all deliveries</button></a>
 
-        <a th:href="@{/calculateOptimalRoute}" class="me-2"><button class="btn btn-primary">Calculate optimal route</button></a>
+        <a th:href="@{/calculateOptimalRoute}"><button class="btn btn-primary">Calculate optimal route</button></a>
 
-    </div>
+        <div class="d-flex flex-column align-item-left">
+            <div class="text-left text-primary mx-1">Courier(s)</div>
+            <div class="d-flex flex-column align-items-left">
+                <div class="input-group" style="max-width: 150px;">
+                    <!-- Bouton de diminution -->
+                    <a type="button" class="btn btn-primary rounded-start" th:href="@{/deleteCourier}">
+                        <strong>-</strong>
+                    </a>
 
-    <!-- Modification du nombre de livreurs -->
-    <div class="container d-flex flex-column align-item-left">
-        <div class="text-left text-primary mx-1">Courier(s)</div>
-        <div class="d-flex flex-column align-items-left">
-            <div class="input-group" style="max-width: 150px;">
-                <!-- Bouton de diminution -->
-                <a type="button" class="btn btn-primary rounded-start" th:href="@{/deleteCourier}">
-                    <strong>-</strong>
-                </a>
+                    <!-- Champ de saisie -->
+                    <input type="number" class="form-control text-center d-none" id="couriers" name="couriers" th:value="${couriers.size()}" min="0" readonly>
+                    <span id="courierCount" class="form-control text-center bg-light border-primary" style="width: 50px;" th:text="${couriers.size()}"></span>
 
-                <!-- Champ de saisie -->
-                <input type="number" class="form-control text-center d-none" id="couriers" name="couriers" th:value="${couriers.size()}" min="0" readonly>
-                <span id="courierCount" class="form-control text-center bg-light border-primary" style="width: 50px;" th:text="${couriers.size()}"></span>
-
-                <!-- Bouton d'incrémentation -->
-                <a type="button" class="btn btn-primary rounded-end" th:href="@{/addCourier}">
-                    <strong>+</strong>
-                </a>
+                    <!-- Bouton d'incrémentation -->
+                    <a type="button" class="btn btn-primary rounded-end" th:href="@{/addCourier}">
+                        <strong>+</strong>
+                    </a>
+                </div>
             </div>
         </div>
+
     </div>
 
-    <div class="container d-flex mt-3 gap-3">
-        <!-- Liste des livraisons -->
-        <div class="table-responsive w-50 rounded-3">
-            <table class="table table-striped table-sm mb-0">
-                <thead class="table-dark rounded-top-3">
-                <tr>
-                    <th>Id</th>
-                    <th>Pickup</th>
-                    <th>Delivery</th>
-                    <th>Warehouse</th>
-                    <th>Courier</th>
-                    <th>Action</th>
-                </tr>
-                </thead>
-                <tbody id="deliveries">
-                <tr th:if="${deliveryRequests.empty}">
-                    <td colspan="6">No deliveries in the database.</td>
-                </tr>
-                <tr th:each="delivery: ${deliveryRequests}" th:id="'delivery-row-' + ${delivery.id}">
-                    <td><span th:text="${delivery.id}"> Id </span></td>
-                    <td><span th:text="${delivery.idPickup}"> Pickup </span></td>
-                    <td><span th:text="${delivery.idDelivery}"> Delivery </span></td>
-                    <td><span th:text="${delivery.idWarehouse}"> Warehouse </span></td>
-                    <td>
+    <div class="d-flex align-items-start justify-content-center gap-3">
+        <div class="d-flex mt-3 gap-3 justify-content-left align-items-center flex-wrap bg-light-subtle p-3 shadow rounded-3 border" id="deliveries" style="max-width: 67.2rem;">
+            <div th:if="${deliveryRequests.empty}" class="alert alert-info mb-0">No deliveries in the database.</div>
+            <div th:each="delivery: ${deliveryRequests}" class="card bg-light rounded-3 position-relative shadow-sm" style="width: 12rem;" th:id="'delivery-card-' + ${delivery.id}">
+                <div class="card-header">
+                    Delivery request <span th:text="${delivery.id}">ID</span>
+                </div>
+                <div class="card-body">
+                    <div class="card-text">Pickup: <span th:text="${delivery.idPickup}">Pickup</span></div>
+                    <div class="card-text">Delivery: <span th:text="${delivery.idDelivery}">Delivery</span></div>
+                    <div class="card-text mt-3">
                         <form th:action="@{/assignCourier}" method="post"
-                              th:id="'assignCourierForm-' + ${delivery.id}">
+                                                 th:id="'assignCourierForm-' + ${delivery.id}">
                             <input type="hidden" name="deliveryRequestId" th:value="${delivery.id}" />
 
                             <select class="form-select" name="courierId"
@@ -202,7 +197,7 @@
 
                                 <!-- Option par défaut si aucun livreur n'est assigné -->
                                 <option th:if="${delivery.idCourier == null}"
-                                        value="">Sélectionner un livreur
+                                        value="">Select courier
                                 </option>
 
                                 <!-- Liste des livreurs disponibles sauf le coursier déjà assigné -->
@@ -213,43 +208,30 @@
                                 </option>
                             </select>
                         </form>
-                    </td>
-                    <td>
-                        <a th:href="@{/deleteDeliveryRequest/{id}(id=${delivery.id})}"><button class="btn btn-danger">Supprimer</button></a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+                    </div>
+                    <a th:href="@{/deleteDeliveryRequest/{id}(id=${delivery.id})}" class="position-absolute top-0 end-0 bg-danger text-white rounded-circle d-flex justify-content-center align-items-center m-1" style="width: 16px; height: 16px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-x" viewBox="0 0 16 16">
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
         </div>
 
-        <div class="table-responsive w-50 rounded-3">
-            <!-- Liste des livreurs -->
-            <table class="table table-striped table-sm mb-0">
-                <thead class="table-dark text-center rounded-top-3">
-                <tr>
-                    <th>Id</th>
-                    <th>Name</th>
-                    <th>Icon</th>
-                    <th>Action</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:if="${couriers.empty}">
-                    <td colspan="5">No courier in the database</td>
-                </tr>
-                <tr th:each="courier: ${couriers}">
-                    <td><span th:text="${courier.id}"> Id </span></td>
-                    <td><span th:text="${courier.name}"> Name </span></td>
-                    <td>
-                        <!-- Image générée par l'API -->
-                        <img th:src="'https://randomuser.me/api/portraits/men/' + ${courier.id} + '.jpg'" alt="Profile Icon" style="width: 40px; height: 40px; border-radius: 50%;">
-                    </td>
-                    <td>
-                        <a th:href="@{/deleteCourier/{id}(id=${courier.id})}"><button class="btn btn-danger">Supprimer</button></a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+        <div class="d-flex mt-3 gap-3 justify-content-left align-items-center flex-wrap bg-light-subtle p-3 shadow rounded-3 border" id="couriers" style="max-width: 41.2rem;">
+            <div th:if="${couriers.empty}" class="alert alert-info mb-0">No couriers in the database.</div>
+            <div th:each="courier: ${couriers}" class="card bg-light rounded-3 position-relative shadow-sm" style="width: 7rem;">
+                <div class="card-header">
+                    <span th:text="${courier.name}">Name</span>
+                </div>
+                <div th:id="'color-marker-' + ${courier.id}" style="width: 100%; height: 0.5rem; background-color: #f0f0f0;"></div>
+                <a th:href="@{/computeOptimalRoute/{id}(id=${courier.id})}" class="btn btn-primary rounded-top-0">Compute</a>
+                <a th:href="@{/deleteCourier/{id}(id=${courier.id})}" class="position-absolute top-0 end-0 bg-danger text-white rounded-circle d-flex justify-content-center align-items-center m-1" style="width: 16px; height: 16px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-x" viewBox="0 0 16 16">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </a>
+            </div>
         </div>
     </div>
 </div>
@@ -275,6 +257,7 @@
             const toastBootstrap = new bootstrap.Toast(successToastElement);
             toastBootstrap.show();
         }
+
     });
 
     // Clé d'accès à l'API MapTiler
@@ -297,59 +280,60 @@
 
     // Tableau de couleurs pour les segments (bleu -> vert -> rouge -> violet -> etc.)
     const colors = [
-        '#FF5733', // Orange vif
-        '#33FF57', // Vert lumineux
-        '#3357FF', // Bleu vif
-        '#FF33A1', // Rose néon
-        '#FFC733', // Jaune chaud
-        '#33FFF5', // Turquoise
-        '#A133FF', // Violet profond
-        '#FF8C33', // Orange chaud
-        '#33FF8C', // Vert menthe
-        '#8C33FF', // Violet électrique
-        '#FF3333', // Rouge vif
-        '#33A1FF', // Bleu ciel
-        '#57FF33', // Vert lime
-        '#F533FF', // Magenta lumineux
-        '#FFE633', // Jaune pastel
-        '#33FFE6', // Bleu aqua
-        '#E633FF', // Pourpre électrique
-        '#FF7033', // Corail
-        '#33FF70', // Vert d'eau
-        '#7033FF', // Bleu indigo
-        '#FF333F', // Rouge carmin
-        '#33D1FF', // Cyan doux
-        '#9EFF33', // Vert pomme
-        '#D133FF', // Violet saturé
-        '#FFAA33', // Orange miel
-        '#33FFA7', // Vert pastel
-        '#AA33FF', // Violet néon
-        '#FF333D', // Rouge cerise
-        '#33BAFF', // Bleu léger
-        '#B6FF33', // Vert anis
-        '#C533FF', // Violet royal
+        '#4a80f5', // Bleu clair Google Main
+        '#f54a4a', // Rouge Google Second
+        '#a2f54a', // Vert clair Google Third
+        '#bf4af5', // Violet Google Fourth
+        '#4adef5', // Cyan Google Fifth
+        '#f54ac6', // Rose Google Sixth
+        '#f5a34a', // Orange Google Seventh
+        '#4af5b2', // Turquoise Google Eighth
+        '#f5f04a', // Jaune Google Ninth
+        '#4a4af5', // Bleu foncé Google Tenth
     ];
+
+    const backColors = [
+        '#14409f', // Bleu foncé Google Main Back
+        '#9f1414', // Rouge foncé Google Second Back
+        '#4f9f14', // Vert foncé Google Third Back
+        '#6f14a9', // Violet foncé Google Fourth Back
+        '#149f9f', // Cyan foncé Google Fifth Back
+        '#9f1466', // Rose foncé Google Sixth Back
+        '#9f6f14', // Orange foncé Google Seventh Back
+        '#149f4f', // Turquoise foncé Google Eighth Back
+        '#9f9f14', // Jaune foncé Google Ninth Back
+        '#14149f', // Bleu foncé Google Tenth Back
+    ]
 
     // Ne pas afficher la carte si aucun node n'est chargé
     toggleMapVisibility(nodes, segments);
-
+    console.log(optimalRoutes);
     // Mettre à jour la carte si les données sont présentes
     if (nodes.length > 0 && segments.length > 0) {
         updateMap(nodes, segments);
         if (deliveryRequests.length > 0) {
-            updateDeliveries(nodes, deliveryRequests, couriers)
-            if (optimalRoutes && optimalRoutes.length > 0) {
+            if (optimalRoutes && Object.keys(optimalRoutes).length > 0) {
                 displayOptimalRoute(optimalRoutes, nodes);
             }
+            updateDeliveries(nodes, deliveryRequests, couriers)
+
         }
     }
 
+    // Mettre les couleurs des marqueurs des livreurs
+    couriers.forEach(courier => {
+        const colorMarker = document.getElementById(`color-marker-${courier.id}`);
+        if (colorMarker) {
+            colorMarker.style.backgroundColor = colors[(courier.id - 1) % colors.length];
+        }
+    });
+
     // Gérer les clics sur les lignes du tableau
-    document.querySelectorAll('#deliveries tr').forEach(row => {
-        row.addEventListener('click', () => {
-            const deliveryId = row.id.split('-')[2]; // Extrait l'ID de la livraison
+    document.querySelectorAll('#deliveries .card').forEach(card => {
+        card.addEventListener('click', () => {
+            const deliveryId = card.id.split('-')[2]; // Extrait l'ID de la livraison
             highlightMarkers(deliveryId);
-            console.log(deliveryId);
+            highlightCard(card.id);
         });
     });
 
@@ -358,40 +342,40 @@
         if (layer.options.markerID) {
             layer.on('click', () => {
                 const deliveryId = layer.options.markerID.split('-')[1]; // Extrait l'ID de la livraison
-                highlightRow(`delivery-row-${deliveryId}`);
+                highlightCard(`delivery-card-${deliveryId}`);
                 highlightMarkers(deliveryId);
-                console.log(deliveryId);
             });
         }
     });
 
-    // VA FALLOIR UN FICHIER A PART POUR LES FONCTIONS JS
-
     // Fonction pour mettre en surbrillance une ligne de tableau
-    function highlightRow(rowId) {
-        const row = document.getElementById(rowId);
-        if (row) {
-            console.log(row);
-            row.classList.add('table-active'); // Ajoute une classe Bootstrap pour surbrillance
-            setTimeout(() => row.classList.remove('table-active'), 3000); // Supprime la surbrillance après 3 secondes
+    function highlightCard(cardId) {
+        const card = document.getElementById(cardId);
+        const cardHeader = card.querySelector('.card-header');
+        if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.classList.add('border', 'border-primary');
+            cardHeader.classList.add('bg-primary', 'text-white');
+            setTimeout(() => {
+                card.classList.remove('border', 'border-primary');
+                cardHeader.classList.remove('bg-primary', 'text-white');
+            }, 3000);
         }
     }
 
     // Fonction pour surbriller les marqueurs liés à une livraison
     function highlightMarkers(deliveryId) {
-        console.log(deliveryId);
+        const courierId = deliveryRequests.find(delivery => delivery.id === parseInt(deliveryId)).idCourier;
         map.eachLayer(layer => {
             if (layer.options.markerID === `pickup-${deliveryId}` || layer.options.markerID === `delivery-${deliveryId}`) {
-                console.log(layer);
-                console.log(layer.options.markerID);
                 // Fait une boucle qui augment progressivement la taille du marqueur et sa couleur
                 layer.setStyle({
                     color: layer.options.markerID.includes('pickup') ? '#007bff' : '#dc3545',
-                    fillColor: colors[deliveryId % colors.length],
+                    fillColor: courierId ? backColors[(courierId - 1) % backColors.length] : '#000',
                     radius: 12
                 });
                 setTimeout(() => layer.setStyle({
-                    color: colors[deliveryId % colors.length],
+                    color: courierId ? backColors[(courierId - 1) % backColors.length] : '#000',
                     fillColor: layer.options.markerID.includes('pickup') ? '#007bff' : '#dc3545',
                     radius: 8
                 }), 3000);
@@ -404,29 +388,17 @@
         // Supprimer les anciennes couches de segments
         map.eachLayer(layer => layer instanceof L.Polyline && map.removeLayer(layer));
 
-        // Couleur initiale (bleu clair) et décrément
-        let red = 170, green = 221, blue = 255; // Valeurs RGB pour bleu clair
-        const decrement = 0.1; // Valeur pour foncer le bleu
+        // Parcourir les clés de l'objet
+        for (const key in routes) {
+            if (routes[key].length === 0) continue;
 
-        console.log(routes);
-
-        // Ajouter les nouveaux segments
-        for (let i = 0; i < routes.length; i++) {
-
-            console.log(routes[i].length);
-            if (routes[i].length === 0) {
-                continue;
-            }
-
-            for (let j = 0; j < routes[i].length - 1; j++) {
-
-                const origin = nodes.find(node => node.id === routes[i][j]);
-                const destination = nodes.find(node => node.id === routes[i][j+1]);
+            const route = routes[key];
+            for (let j = 0; j < route.length - 1; j++) { // Notez `route.length - 1`
+                const origin = nodes.find(node => node.id === route[j]);
+                const destination = nodes.find(node => node.id === route[j + 1]);
                 const offsetFactor = 0.0000001; // Facteur pour décaler légèrement les lignes
 
                 if (origin && destination) {
-
-                    // Appliquer un décalage léger basé sur l'indice du segment
                     const offset = j * offsetFactor;
                     const adjustedOrigin = [
                         origin.latitude + offset,
@@ -437,80 +409,20 @@
                         destination.longitude + offset
                     ];
 
-                    // Ajouter le segment avec la couleur actuelle
-                    const color = colors[Math.min(i, colors.length - 1)];
+                    const backColor = backColors[(key - 1) % backColors.length];
+                    const color = colors[(key - 1) % colors.length];
 
-                    L.polyline([
-                        adjustedOrigin,
-                        adjustedDestination
-                    ], {color: "#ffffff", weight: 10, smoothFactor: 1}).addTo(map);
-
-                    L.polyline([
-                        adjustedOrigin,
-                        adjustedDestination
-                    ], {color, weight: 8, smoothFactor: 1}).addTo(map);
-
-
-                    // Foncé progressivement la couleur
-                    blue = Math.max(blue - decrement, 0); // Réduire l'intensité du bleu
-                    green = Math.max(green - decrement, 0); // Réduire l'intensité du vert
-                    red = Math.min(red + decrement, 255); // Augmenter l'intensité du rouge
+                    L.polyline([adjustedOrigin, adjustedDestination], { color: backColor, weight: 12, smoothFactor: 1 }).addTo(map);
+                    L.polyline([adjustedOrigin, adjustedDestination], { color: color, weight: 8, smoothFactor: 1 }).addTo(map);
                 }
             }
         }
 
-        // Ajuster la vue de la carte pour inclure tous les marqueurs
+        // Ajuster la vue de la carte
         if (nodes.length > 0) {
             const bounds = L.latLngBounds(nodes.map(node => [node.latitude, node.longitude]));
             map.fitBounds(bounds);
         }
-
-    }
-
-    // Fonction qui recupere la liste de nodes correspondant au chemin optimal
-    function calculateOptimalRoute(){
-
-        fetch('/calculateOptimalRoute', {
-            method: 'GET',
-        })
-            .then(response => response.json()) // S'assurer que la réponse est en JSON
-            .then(data => {
-
-                if (data.error) {
-                    return;
-                }
-
-                displayOptimalRoute(data.routes, data.nodes);
-            });
-    }
-
-    // Fonction pour assigner un livreur à une livraison
-    function assignCourier(deliveryRequestId) {
-        const courierSelect = document.getElementById('courierSelect-' + deliveryRequestId);
-        const selectedCourierId = courierSelect.value;
-
-        if (!selectedCourierId) {
-            //displayMessage('message', 'Veuillez sélectionner un livreur.', false);
-            return;
-        }
-
-        // Création de la requête AJAX pour envoyer la sélection
-        fetch('/assignCourier', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded', // Contenu de type URL-encoded
-            },
-            body: new URLSearchParams({
-                courierId: selectedCourierId,
-                deliveryRequestId: deliveryRequestId
-            })
-        })
-            .then(response => response.json()) // S'assurer que la réponse est en JSON
-            .then(data => {
-                if (!data.error) {
-                    updateDeliveries(data.nodes, data.deliveryRequests, data.couriers);
-                }
-            });
     }
 
     // Fonction pour afficher/masquer le loading
@@ -575,10 +487,7 @@
                     fillColor: '#28a745', // Couleur de remplissage
                     fillOpacity: 1, // Opacité de remplissage
                     radius: 10 // Rayon du cercle
-                }).addTo(map).bindPopup(`<strong>Warehouse</strong><br/>${warehouseNode.latitude}, ${warehouseNode.longitude}`);
-            } else {
-                //displayMessage('message', 'Warehouse node not found. Ensure map is loaded first or is large enough to include all nodes.', false);
-                return;
+                }).addTo(map).bindPopup(`<strong>Warehouse</strong>`);
             }
         }
 
@@ -599,40 +508,17 @@
     // Fonction pour ajouter un marqueur de livraison
     function addDeliveryMarker(node, type, deliveryId) {
         // Add markerID to the marker
+        const idCourier = deliveryRequests.find(delivery => delivery.id === deliveryId).idCourier;
         const isPickup = type === 'Pickup';
+        console.log(idCourier ? backColors[(idCourier - 1) % backColors.length] : '#000');
+
         L.circleMarker([node.latitude, node.longitude], {
-            color: colors[deliveryId % colors.length], // Couleur du bord
+            color: idCourier ? backColors[(idCourier - 1) % backColors.length] : '#000', // Couleur du bord
             fillColor: isPickup ? '#007bff' : '#dc3545', // Couleur de remplissage
             fillOpacity: 1, // Opacité du remplissage
-            radius: isPickup ? 8 : 8, // Taille : légèrement différente pour distinguer Pickup et Delivery
-            markerID: `${isPickup ? 'pickup' : 'delivery'}-${deliveryId}`
-        }).addTo(map).bindPopup(`<strong>${type}</strong><br/>${node.latitude}, ${node.longitude}`);
-    }
-
-    // Fonction générique pour uploader une carte
-    function uploadMap(url, formId) {
-        const formData = new FormData(document.getElementById(formId));
-
-        toggleLoading(true);
-
-        fetch(url, {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => {
-                if (!response.ok){
-                    return response.json().then(error => {
-                        throw new Error(error.details || 'Erreur réseau');
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                updateMap(data.nodes, data.segments);
-            })
-            .finally(() => {
-                toggleLoading(false);
-            });
+            radius: 8, // Rayon du cercle
+            markerID: `${isPickup ? 'pickup' : 'delivery'}-${deliveryId}` // ID unique pour le marqueur
+        }).addTo(map).bindPopup(`<strong>${type}</strong><br/>${idCourier ? `Courier ${idCourier}` : 'Unassigned'}`);
     }
 </script>
 

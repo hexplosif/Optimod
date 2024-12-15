@@ -149,7 +149,7 @@ public class OptimodController {
     @GetMapping("/calculateOptimalRoute")
     public ModelAndView calculateOptimalRoute(Model model) {
         try {
-            List<List<Long>> optimalRoutes = optimodProxy.calculateOptimalRoute();
+            Map<Long, List<Long>> optimalRoutes = optimodProxy.calculateOptimalRoute();
             model.addAttribute("success", "The optimal route has been calculated successfully !");
             model.addAttribute("optimalRoutes", optimalRoutes);
         } catch (RuntimeException e) {
