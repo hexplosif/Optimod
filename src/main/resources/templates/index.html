@@ -146,7 +146,7 @@
 
         <a th:href="@{/deleteAllDeliveryRequests}"><button class="btn btn-danger">Remove all deliveries</button></a>
 
-        <a th:href="@{/calculateOptimalRoute}"><button class="btn btn-primary">Calculate optimal route</button></a>
+        <a th:href="@{/calculateOptimalRoute}"><button class="btn btn-primary">Compute optimal tour</button></a>
 
         <div class="d-flex flex-column align-item-left">
             <div class="text-left text-primary mx-1">Courier(s)</div>
@@ -172,7 +172,7 @@
     </div>
 
     <div class="d-flex align-items-start justify-content-center gap-3">
-        <div class="d-flex mt-3 gap-3 justify-content-left align-items-center flex-wrap bg-light-subtle p-3 shadow rounded-3 border" id="deliveries" style="max-width: 67.2rem;">
+        <div class="d-flex mt-3 gap-3 justify-content-left align-items-center flex-wrap bg-light-subtle p-3 shadow rounded-3 border" id="deliveries" style="max-width: 66.2rem;">
             <div th:if="${deliveryRequests.empty}" class="alert alert-info mb-0">No deliveries in the database.</div>
             <div th:each="delivery: ${deliveryRequests}" class="card bg-light rounded-3 position-relative shadow-sm" style="width: 12rem;" th:id="'delivery-card-' + ${delivery.id}">
                 <div class="card-header">
@@ -385,6 +385,8 @@
 
     // Fonction qui affiche la route optimale
     function displayOptimalRoute(routes, nodes) {
+
+        console.log(routes);
         // Supprimer les anciennes couches de segments
         map.eachLayer(layer => layer instanceof L.Polyline && map.removeLayer(layer));
 
