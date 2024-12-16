@@ -160,6 +160,34 @@ public class OptimodController {
         return new ModelAndView("index");
     }
 
+    @GetMapping("/saveSession")
+    // Propose de sauvegarder un fichier XML contenant les données de la session (map, delievery requests, couriers)
+    public ModelAndView saveSession(Model model) {
+        try {
+            optimodProxy.saveSession();
+            model.addAttribute("success", "The session has been successfully saved !");
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "Error while saving the session");
+            model.addAttribute("details", e.getMessage());
+        }
+        populateModel(model);
+        return new ModelAndView("index");
+    }
+
+    @GetMapping("/restoreSession")
+    // Propose de restaurer une session à partir d'un fichier XML
+    public ModelAndView restoreSession(Model model) {
+        try {
+            optimodProxy.restoreSession();
+            model.addAttribute("success", "The session has been successfully restored !");
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "Error while restoring the session");
+            model.addAttribute("details", e.getMessage());
+        }
+        populateModel(model);
+        return new ModelAndView("index");
+    }
+
     private void populateModel(Model model) {
         model.addAttribute("nodes", optimodProxy.getAllNodes());
         model.addAttribute("segments", optimodProxy.getAllSegments());

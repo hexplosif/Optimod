@@ -819,4 +819,48 @@ public class OptimodProxy {
             throw new RuntimeException("Unexpected error occurred: " + e.getMessage());
         }
     }
+
+    public void saveSession() {
+        String apiUrl = customProperties.getApiUrl();
+        String saveSessionUrl = apiUrl + "/saveSession";
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            restTemplate.exchange(
+                    saveSessionUrl,
+                    HttpMethod.GET,
+                    null,
+                    Void.class
+            );
+        } catch (HttpClientErrorException.BadRequest e) {
+            // Gestion des erreurs 400 avec le message retourné
+            throw new RuntimeException(e.getResponseBodyAsString());
+        } catch (Exception e) {
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la sauvegarde de la session.");
+        }
+    }
+
+    public void restoreSession() {
+        String apiUrl = customProperties.getApiUrl();
+        String restoreSessionUrl = apiUrl + "/restoreSession";
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            restTemplate.exchange(
+                    restoreSessionUrl,
+                    HttpMethod.GET,
+                    null,
+                    Void.class
+            );
+        } catch (HttpClientErrorException.BadRequest e) {
+            // Gestion des erreurs 400 avec le message retourné
+            throw new RuntimeException(e.getResponseBodyAsString());
+        } catch (Exception e) {
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la restauration de la session.");
+        }
+    }
 }
