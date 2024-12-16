@@ -273,9 +273,16 @@ public class OptimodProxy {
         String deleteAllNodesUrl = apiUrl + "/nodes";
 
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.delete(deleteAllNodesUrl);
 
-        log.debug("Delete all nodes called");
+        try {
+            restTemplate.delete(deleteAllNodesUrl);
+        } catch (HttpClientErrorException.BadRequest e) {
+            // Gestion des erreurs 400 avec le message retourné
+            throw new RuntimeException(e.getResponseBodyAsString());
+        } catch (Exception e) {
+            // Gestion des erreurs génériques
+            throw new RuntimeException("Erreur lors de la suppression des noeuds.");
+        }
     }
 
     /**

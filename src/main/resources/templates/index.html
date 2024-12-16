@@ -138,7 +138,7 @@
             <input type="file" class="btn btn-primary form-control-file" id="mapFile" name="file" accept=".xml" onchange="this.form.submit(); toggleLoading(true)" style="display: none">
         </form>
         <form id="loadDeliveryRequestForm" enctype="multipart/form-data" th:action="@{/loadDeliveryRequest}" method="post">
-            <label for="deliveryFiles" class="btn btn-primary">Upload delivery requests</label>
+            <label for="deliveryFiles" class="btn btn-primary">Add delivery requests</label>
             <input type="file" class="btn btn-primary form-control-file" id="deliveryFiles" name="file" accept=".xml" style="display: none" onchange="this.form.submit(); toggleLoading(true)" multiple>
         </form>
 

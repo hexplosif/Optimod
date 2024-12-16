@@ -61,7 +61,7 @@ public class OptimodController {
             optimodProxy.deleteAllNodes();
             model.addAttribute("success", "The nodes have been successfully deleted !");
         } catch (RuntimeException e) {
-            model.addAttribute("error", "Error while deleting the nodes");
+            model.addAttribute("error", "Error while deleting the map");
             model.addAttribute("details", e.getMessage());
         }
         populateModel(model);
