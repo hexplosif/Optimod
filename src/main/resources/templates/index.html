@@ -224,8 +224,7 @@
                 <div class="card-header">
                     <span th:text="${courier.name}">Name</span>
                 </div>
-                <div th:id="'color-marker-' + ${courier.id}" style="width: 100%; height: 0.5rem; background-color: #f0f0f0;"></div>
-                <a th:href="@{/computeOptimalRoute/{id}(id=${courier.id})}" class="btn btn-primary rounded-top-0">Compute</a>
+                <div th:id="'color-marker-' + ${courier.id}" style="width: 100%; height: 0.5rem; background-color: #f0f0f0;" class="rounded-bottom-3"></div>
                 <a th:href="@{/deleteCourier/{id}(id=${courier.id})}" class="position-absolute top-0 end-0 bg-danger text-white rounded-circle d-flex justify-content-center align-items-center m-1" style="width: 16px; height: 16px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-x" viewBox="0 0 16 16">
                         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
