@@ -169,11 +169,11 @@
             </div>
         </div>
 
-        <a th:href="@{/saveSession}" class="btn btn-primary">Save Session</a>
+        <a th:href="@{/saveSession}" class="btn btn-success">Save Session</a>
 
         <form id="loadSessionForm" enctype="multipart/form-data" th:action="@{/restoreSession}" method="post">
-            <label for="sessionFile" class="btn btn-primary">Restore session</label>
-            <input type="file" class="btn btn-primary form-control-file" id="sessionFile" name="file" accept=".xml" onchange="this.form.submit(); toggleLoading(true)" style="display: none">
+            <label for="sessionFile" class="btn btn-success">Restore session</label>
+            <input type="file" class="btn btn-success form-control-file" id="sessionFile" name="file" accept=".xml" onchange="this.form.submit(); toggleLoading(true)" style="display: none">
         </form>
 
     </div>
