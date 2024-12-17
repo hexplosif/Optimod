@@ -17,11 +17,13 @@ Ce projet a pour but de mettre en place un système de gestion de trafic pour la
 
 ## Lancement du projet
 
-Pour lancer le projet il y a besoin de ce projet-ci ainsi que l'API :
+Pour lancer le projet il y a besoin de ce projet-ci ainsi que le BackEnd:
 
 [Optimod-BackEnd](https://github.com/hexplosif/Optimod-BackEnd.git) 
 
 Puis il faut lancer les deux projets en même temps.
+
+Au moment du lancement, il est possible que l'IDE vous demande d'accepter les annotations Lombok. Pour cela, il suffit de télécharger le plugin Lombok sur votre IDE. (Ce sera normalement proposé par votre IDE)
 
 ## Accès a l'application web
 
