@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.LinkedMultiValueMap;
@@ -21,7 +22,11 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -820,47 +825,77 @@ public class OptimodProxy {
         }
     }
 
-    public void saveSession() {
+    public ResponseEntity<Resource> saveSession() {
         String apiUrl = customProperties.getApiUrl();
         String saveSessionUrl = apiUrl + "/saveSession";
 
         RestTemplate restTemplate = new RestTemplate();
 
         try {
-            restTemplate.exchange(
+            ResponseEntity<Resource> response = restTemplate.exchange(
                     saveSessionUrl,
                     HttpMethod.GET,
                     null,
-                    Void.class
+                    Resource.class
             );
+
+            // Retourner la réponse brute au contrôleur pour qu'elle soit transmise au client
+            return ResponseEntity.ok()
+                    .contentType(response.getHeaders().getContentType())
+                    .header(HttpHeaders.CONTENT_DISPOSITION, response.getHeaders().getContentDisposition().toString())
+                    .body(response.getBody());
+
         } catch (HttpClientErrorException.BadRequest e) {
-            // Gestion des erreurs 400 avec le message retourné
             throw new RuntimeException(e.getResponseBodyAsString());
         } catch (Exception e) {
-            // Gestion des erreurs génériques
             throw new RuntimeException("Erreur lors de la sauvegarde de la session.");
         }
     }
 
-    public void restoreSession() {
+    public void restoreSession(MultipartFile file) {
         String apiUrl = customProperties.getApiUrl();
         String restoreSessionUrl = apiUrl + "/restoreSession";
 
         RestTemplate restTemplate = new RestTemplate();
 
+        // Convertir le fichier en ByteArrayResource
+        ByteArrayResource fileAsResource;
         try {
+            fileAsResource = new ByteArrayResource(file.getBytes()) {
+                @Override
+                public String getFilename() {
+                    return file.getOriginalFilename();
+                }
+            };
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read file: " + e.getMessage());
+        }
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("file", fileAsResource);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+        try {
+            // Envoyer la requête POST
             restTemplate.exchange(
                     restoreSessionUrl,
-                    HttpMethod.GET,
-                    null,
+                    HttpMethod.POST,
+                    requestEntity,
                     Void.class
             );
-        } catch (HttpClientErrorException.BadRequest e) {
-            // Gestion des erreurs 400 avec le message retourné
+
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            // Extraire le corps de la réponse d'erreur
+            log.error("Server responded with error: " + e.getResponseBodyAsString());
+
             throw new RuntimeException(e.getResponseBodyAsString());
         } catch (Exception e) {
-            // Gestion des erreurs génériques
-            throw new RuntimeException("Erreur lors de la restauration de la session.");
+            log.error("Unexpected error during restore session: ", e.getMessage());
+            throw new RuntimeException("Unexpected error occurred: " + e.getMessage());
         }
     }
 }

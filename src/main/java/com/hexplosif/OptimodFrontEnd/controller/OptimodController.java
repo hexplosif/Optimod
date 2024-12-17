@@ -1,5 +1,6 @@
 package com.hexplosif.OptimodFrontEnd.controller;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -9,6 +10,8 @@ import com.hexplosif.OptimodFrontEnd.model.Node;
 import com.hexplosif.OptimodFrontEnd.model.Segment;
 import com.hexplosif.OptimodFrontEnd.proxy.OptimodProxy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -161,24 +164,27 @@ public class OptimodController {
     }
 
     @GetMapping("/saveSession")
-    // Propose de sauvegarder un fichier XML contenant les données de la session (map, delievery requests, couriers)
-    public ModelAndView saveSession(Model model) {
+    public ResponseEntity<Resource> saveSession() {
         try {
-            optimodProxy.saveSession();
-            model.addAttribute("success", "The session has been successfully saved !");
+            // Appeler le proxy pour obtenir la réponse binaire du back-end
+            ResponseEntity<Resource> response = optimodProxy.saveSession();
+
+            // Transmettre la réponse directement au client
+            return ResponseEntity.ok()
+                    .contentType(response.getHeaders().getContentType())
+                    .header(HttpHeaders.CONTENT_DISPOSITION, response.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION))
+                    .body(response.getBody());
         } catch (RuntimeException e) {
-            model.addAttribute("error", "Error while saving the session");
-            model.addAttribute("details", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
-        populateModel(model);
-        return new ModelAndView("index");
     }
 
-    @GetMapping("/restoreSession")
+
+    @PostMapping("/restoreSession")
     // Propose de restaurer une session à partir d'un fichier XML
-    public ModelAndView restoreSession(Model model) {
+    public ModelAndView restoreSession(@RequestParam("file") MultipartFile file, Model model) {
         try {
-            optimodProxy.restoreSession();
+            optimodProxy.restoreSession(file);
             model.addAttribute("success", "The session has been successfully restored !");
         } catch (RuntimeException e) {
             model.addAttribute("error", "Error while restoring the session");
