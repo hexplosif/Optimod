@@ -21,7 +21,9 @@ Pour lancer le projet il y a besoin de ce projet-ci ainsi que le BackEnd:
 
 [Optimod-BackEnd](https://github.com/hexplosif/Optimod-BackEnd.git) 
 
-Puis il faut lancer les deux projets en même temps.
+Il faut ensuite executer le projet MAVEN. Si ce n'est pas proposé par l'IDE, il faut executer le fichier `OptimodApplication.java`.
+
+Puis il faut faire de même pour le BackEnd. Si encore une fois l'IDE ne propose pas d'executer le projet, il faut executer le fichier `OptimodBackEndApplication.java`.
 
 Au moment du lancement, il est possible que l'IDE vous demande d'accepter les annotations Lombok. Pour cela, il suffit de télécharger le plugin Lombok sur votre IDE. (Ce sera normalement proposé par votre IDE)
 
